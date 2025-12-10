@@ -126,7 +126,7 @@ export default function AdminUploadPage() {
                     ...formData,
                     vimeoVideoId: vimeoId,
                     videoUrl: `https://vimeo.com/${vimeoId}`,
-                    thumbnailUrl: 'https://placehold.co/600x400?text=Processing',
+                    thumbnailUrl: 'https://placehold.co/600x400/1e293b/white?text=Video',
                     status: 'published' // Set to published so users can see immediately
                 })
             })
