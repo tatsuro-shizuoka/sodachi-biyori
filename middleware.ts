@@ -5,9 +5,10 @@ import { verifyAdminToken, verifyGuardianToken } from './lib/auth'
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
 
-    // 1. Admin Routes
-    if (path.startsWith('/admin')) {
-        if (path === '/admin/login') {
+    // 1. Admin Routes (pages and APIs)
+    if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
+        // Allow login page and auth API without token
+        if (path === '/admin/login' || path.startsWith('/api/auth/admin')) {
             return NextResponse.next()
         }
 
@@ -15,6 +16,10 @@ export async function middleware(request: NextRequest) {
         const session = token ? await verifyAdminToken(token) : null
 
         if (!session) {
+            // For API routes, return 401 instead of redirect
+            if (path.startsWith('/api/')) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            }
             return NextResponse.redirect(new URL('/admin/login', request.url))
         }
         return NextResponse.next()
