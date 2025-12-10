@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { ArrowLeft, Plus, Video as VideoIcon, Upload, FileVideo, X, CheckCircle } from 'lucide-react'
+import * as tus from 'tus-js-client'
 
 interface VideoData {
     id: string
@@ -97,43 +98,55 @@ export default function ClassVideosPage() {
         setProgress(0)
 
         try {
-            // 1. Upload file to local server
-            const uploadFormData = new FormData()
-            uploadFormData.append('file', file)
-
-            const xhr = new XMLHttpRequest()
-
-            xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable) {
-                    const percentage = (event.loaded / event.total) * 100
-                    setProgress(percentage)
-                }
+            // 1. Get Upload Link from Vimeo via our API
+            const linkRes = await fetch('/api/admin/vimeo/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    size: file.size,
+                    name: formData.title || file.name,
+                    description: formData.description || ''
+                })
             })
 
-            const videoUrl = await new Promise<string>((resolve, reject) => {
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText)
-                        resolve(response.videoUrl)
-                    } else {
-                        reject(new Error('Upload failed'))
+            if (!linkRes.ok) {
+                const errorData = await linkRes.json()
+                throw new Error(errorData.error || 'Failed to get upload link')
+            }
+
+            const { uploadLink, vimeoId, uri } = await linkRes.json()
+
+            // 2. Upload to Vimeo using TUS protocol
+            await new Promise<void>((resolve, reject) => {
+                const upload = new tus.Upload(file, {
+                    uploadUrl: uploadLink,
+                    onError: (error) => {
+                        console.error('Vimeo upload failed:', error)
+                        reject(error)
+                    },
+                    onProgress: (bytesUploaded, bytesTotal) => {
+                        const percentage = (bytesUploaded / bytesTotal) * 100
+                        setProgress(percentage)
+                    },
+                    onSuccess: () => {
+                        console.log('Vimeo upload complete:', uri)
+                        resolve()
                     }
-                }
-                xhr.onerror = () => reject(new Error('Upload failed'))
-                xhr.open('POST', '/api/admin/videos/upload-local')
-                xhr.send(uploadFormData)
+                })
+                upload.start()
             })
 
-            // 2. Save metadata to DB
+            // 3. Save metadata to database
             const classId = Array.isArray(params?.classId) ? params.classId[0] : params?.classId
             const saveRes = await fetch(`/api/admin/classes/${classId}/videos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    videoUrl: videoUrl,
-                    thumbnailUrl: 'https://placehold.co/600x400?text=Video',
-                    status: 'published'
+                    vimeoVideoId: vimeoId,
+                    videoUrl: `https://vimeo.com/${vimeoId}`,
+                    thumbnailUrl: 'https://placehold.co/600x400?text=Processing',
+                    status: 'processing'
                 })
             })
 
@@ -152,7 +165,7 @@ export default function ClassVideosPage() {
             }
 
         } catch (error) {
-            console.error(error)
+            console.error('Upload error:', error)
             setUploadState('error')
         }
     }
