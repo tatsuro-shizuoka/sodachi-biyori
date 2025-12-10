@@ -18,6 +18,8 @@ export default function AdminDashboardPage() {
     const [newClassName, setNewClassName] = useState('')
     const [newClassPassword, setNewClassPassword] = useState('')
     const [loading, setLoading] = useState(true)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState('')
     const router = useRouter()
 
     useEffect(() => {
@@ -40,6 +42,9 @@ export default function AdminDashboardPage() {
 
     const handleCreateClass = async (e: React.FormEvent) => {
         e.preventDefault()
+        setIsSubmitting(true)
+        setError('')
+
         try {
             const res = await fetch('/api/admin/classes', {
                 method: 'POST',
@@ -52,9 +57,15 @@ export default function AdminDashboardPage() {
                 setNewClassPassword('')
                 setShowForm(false)
                 fetchClasses()
+            } else {
+                const data = await res.json()
+                setError(data.error || 'クラスの作成に失敗しました')
             }
         } catch (error) {
-            console.error('Failed to create class')
+            console.error('Failed to create class:', error)
+            setError('ネットワークエラーが発生しました')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -85,6 +96,11 @@ export default function AdminDashboardPage() {
                 showForm && (
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 fade-in duration-200">
                         <h2 className="text-lg font-bold mb-4">新規クラス作成</h2>
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
                         <form onSubmit={handleCreateClass} className="flex flex-col md:flex-row gap-4 items-end">
                             <div className="flex-1 w-full">
                                 <Input
@@ -105,7 +121,9 @@ export default function AdminDashboardPage() {
                                     required
                                 />
                             </div>
-                            <Button type="submit" className="w-full md:w-auto">作成する</Button>
+                            <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting}>
+                                {isSubmitting ? '作成中...' : '作成する'}
+                            </Button>
                         </form>
                     </div>
                 )
