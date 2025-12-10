@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Class {
+  id           String   @id @default(uuid())
+  name         String
+  grade        String?  // e.g., "Year 1"
+  schoolYear   String?  // e.g., "2025"
+  passwordHash String   // Shared Check Password
+  
+  // Relations
+  videos       Video[]
+  children     ChildClassroom[]
+  
+  guardianSettings GuardianClassroomSetting[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Video {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  videoUrl       String   // Legacy or fallback
+  vimeoVideoId   String?  // New Vimeo ID
+  thumbnailUrl   String?
+  
+  status         String   @default("draft") // draft, processing, published
+  recordedOn     DateTime?
+  durationSec    Int?
+  
+  isDownloadable Boolean  @default(false)
+  
+  classId        String
+  class          Class    @relation(fields: [classId], references: [id])
+  
+  favorites      Favorite[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// --- Sodachi Biyori New Models ---
+
+model Guardian {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  
+  children     GuardianChild[]
+  favorites    Favorite[]
+  notifSettings GuardianClassroomSetting[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Child {
+  id        String   @id @default(uuid())
+  name      String
+  birthday  DateTime?
+  
+  guardians GuardianChild[]
+  classes   ChildClassroom[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GuardianChild {
+  id         String   @id @default(uuid())
+  guardianId String
+  childId    String
+  
+  guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  child      Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([guardianId, childId])
+}
+
+model ChildClassroom {
+  id          String   @id @default(uuid())
+  childId     String
+  classId     String
+  schoolYear  String? // Snapshot of year
+
+  child       Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, classId])
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  guardianId String
+  videoId    String
+  
+  guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+
+  @@unique([guardianId, videoId])
+}
+
+model GuardianClassroomSetting {
+  id              String   @id @default(uuid())
+  guardianId      String
+  classId         String
+  notifyNewVideo  Boolean  @default(true)
+
+  guardian        Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  class           Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([guardianId, classId])
+}
