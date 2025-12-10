@@ -146,7 +146,7 @@ export default function ClassVideosPage() {
                     vimeoVideoId: vimeoId,
                     videoUrl: `https://vimeo.com/${vimeoId}`,
                     thumbnailUrl: 'https://placehold.co/600x400?text=Processing',
-                    status: 'processing'
+                    status: 'published'
                 })
             })
 
