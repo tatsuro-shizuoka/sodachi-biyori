@@ -29,8 +29,16 @@ export async function middleware(request: NextRequest) {
     // - / : Login Page
     // - /signup : Signup Page
     // - /api/auth/* : Auth APIs
-    // - /_next/*, /favicon.ico : Static assets (handled by config matcher mostly)
-    if (path === '/' || path === '/signup' || path.startsWith('/api/auth')) {
+    // - /manifest.json, /sw.js : PWA files
+    // - /icons/* : App icons
+    if (
+        path === '/' ||
+        path === '/signup' ||
+        path.startsWith('/api/auth') ||
+        path === '/manifest.json' ||
+        path === '/sw.js' ||
+        path.startsWith('/icons/')
+    ) {
         return NextResponse.next()
     }
 
