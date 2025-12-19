@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
-import { ArrowLeft, Plus, Video as VideoIcon, Upload, FileVideo, X, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Plus, Video as VideoIcon, Upload, FileVideo, X, CheckCircle, Trash2 } from 'lucide-react'
 import * as tus from 'tus-js-client'
 
 interface VideoData {
@@ -186,6 +186,20 @@ export default function ClassVideosPage() {
         }
     }
 
+    const deleteVideo = async (videoId: string, title: string) => {
+        if (!confirm(`「${title}」を削除しますか？この操作は取り消せません。`)) return
+        try {
+            const res = await fetch(`/api/admin/videos/${videoId}`, {
+                method: 'DELETE'
+            })
+            if (res.ok) {
+                setVideos(videos.filter(v => v.id !== videoId))
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
             <div className="flex items-center gap-4">
@@ -335,10 +349,18 @@ export default function ClassVideosPage() {
                                 <Button
                                     variant={video.status === 'published' ? "outline" : "primary"}
                                     size="sm"
-                                    className="w-full"
+                                    className="flex-1"
                                     onClick={() => toggleVideoStatus(video.id, video.status)}
                                 >
                                     {video.status === 'published' ? '下書きに戻す' : '公開する'}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => deleteVideo(video.id, video.title)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
-import { Plus, Video, Users, Building2 } from 'lucide-react'
+import { Plus, Video, Users, Building2, Trash2 } from 'lucide-react'
 
 interface School {
     id: string
@@ -94,6 +94,24 @@ export default function AdminDashboardPage() {
             setError('ネットワークエラーが発生しました')
         } finally {
             setIsSubmitting(false)
+        }
+    }
+
+    const deleteClass = async (classId: string, name: string) => {
+        if (!confirm(`「${name}」とそのすべての動画を削除しますか？この操作は取り消せません。`)) return
+        try {
+            const res = await fetch(`/api/admin/classes/${classId}`, {
+                method: 'DELETE'
+            })
+            if (res.ok) {
+                fetchClasses()
+            } else {
+                const data = await res.json()
+                setError(data.error || 'クラスの削除に失敗しました')
+            }
+        } catch (error) {
+            console.error('Failed to delete class:', error)
+            setError('ネットワークエラーが発生しました')
         }
     }
 
@@ -206,13 +224,22 @@ export default function AdminDashboardPage() {
                         <p className="text-sm text-slate-500 mb-4">
                             パスワード保護あり
                         </p>
-                        <Button
-                            variant="outline"
-                            className="w-full hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400"
-                            onClick={() => router.push(`/admin/classes/${c.id}/videos`)}
-                        >
-                            動画を管理する
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                className="flex-1 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                onClick={() => router.push(`/admin/classes/${c.id}/videos`)}
+                            >
+                                動画を管理
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => deleteClass(c.id, c.name)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 ))}
 
