@@ -4,19 +4,27 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
-import { Plus, Video, Users } from 'lucide-react'
+import { Plus, Video, Users, Building2 } from 'lucide-react'
+
+interface School {
+    id: string
+    name: string
+}
 
 interface ClassData {
     id: string
     name: string
+    school: School | null
     _count: { videos: number }
 }
 
 export default function AdminDashboardPage() {
     const [classes, setClasses] = useState<ClassData[]>([])
+    const [schools, setSchools] = useState<School[]>([])
     const [showForm, setShowForm] = useState(false)
     const [newClassName, setNewClassName] = useState('')
     const [newClassPassword, setNewClassPassword] = useState('')
+    const [selectedSchoolId, setSelectedSchoolId] = useState('')
     const [loading, setLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -24,6 +32,7 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         fetchClasses()
+        fetchSchools()
     }, [])
 
     const fetchClasses = async () => {
@@ -40,6 +49,21 @@ export default function AdminDashboardPage() {
         }
     }
 
+    const fetchSchools = async () => {
+        try {
+            const res = await fetch('/api/admin/schools')
+            if (res.ok) {
+                const data = await res.json()
+                setSchools(data)
+                if (data.length > 0) {
+                    setSelectedSchoolId(data[0].id)
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch schools')
+        }
+    }
+
     const handleCreateClass = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
@@ -49,7 +73,11 @@ export default function AdminDashboardPage() {
             const res = await fetch('/api/admin/classes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newClassName, password: newClassPassword }),
+                body: JSON.stringify({
+                    name: newClassName,
+                    password: newClassPassword,
+                    schoolId: selectedSchoolId || null
+                }),
             })
 
             if (res.ok) {
@@ -82,7 +110,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="flex space-x-3">
                     <Button variant="outline" onClick={() => router.push('/admin/schools')}>
-                        <Users className="mr-2 h-4 w-4" />
+                        <Building2 className="mr-2 h-4 w-4" />
                         園管理
                     </Button>
                     <Button variant="outline" onClick={() => router.push('/admin/videos/upload')}>
@@ -96,17 +124,34 @@ export default function AdminDashboardPage() {
                 </div>
             </div>
 
-            {
-                showForm && (
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 fade-in duration-200">
-                        <h2 className="text-lg font-bold mb-4">新規クラス作成</h2>
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                                {error}
+            {showForm && (
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 fade-in duration-200">
+                    <h2 className="text-lg font-bold mb-4">新規クラス作成</h2>
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
+                    <form onSubmit={handleCreateClass} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    所属する園
+                                </label>
+                                <select
+                                    value={selectedSchoolId}
+                                    onChange={(e) => setSelectedSchoolId(e.target.value)}
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="">選択してください</option>
+                                    {schools.map((school) => (
+                                        <option key={school.id} value={school.id}>
+                                            {school.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
-                        <form onSubmit={handleCreateClass} className="flex flex-col md:flex-row gap-4 items-end">
-                            <div className="flex-1 w-full">
+                            <div>
                                 <Input
                                     label="クラス名"
                                     placeholder="例: チューリップ組"
@@ -115,7 +160,7 @@ export default function AdminDashboardPage() {
                                     required
                                 />
                             </div>
-                            <div className="flex-1 w-full">
+                            <div>
                                 <Input
                                     label="共通パスワード"
                                     placeholder="保護者配布用パスワード"
@@ -125,13 +170,15 @@ export default function AdminDashboardPage() {
                                     required
                                 />
                             </div>
-                            <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting}>
-                                {isSubmitting ? '作成中...' : '作成する'}
-                            </Button>
-                        </form>
-                    </div>
-                )
-            }
+                            <div className="flex items-end">
+                                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting ? '作成中...' : '作成する'}
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classes.map((c) => (
@@ -147,9 +194,15 @@ export default function AdminDashboardPage() {
                                 動画数: {c._count.videos}
                             </span>
                         </div>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-xl font-bold mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {c.name}
                         </h3>
+                        {c.school && (
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                                <Building2 className="h-3 w-3" />
+                                {c.school.name}
+                            </p>
+                        )}
                         <p className="text-sm text-slate-500 mb-4">
                             パスワード保護あり
                         </p>
@@ -169,7 +222,6 @@ export default function AdminDashboardPage() {
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     )
 }
-

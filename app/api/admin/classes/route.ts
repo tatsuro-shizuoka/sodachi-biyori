@@ -13,6 +13,9 @@ export async function GET() {
         const classes = await prisma.class.findMany({
             orderBy: { createdAt: 'desc' },
             include: {
+                school: {
+                    select: { id: true, name: true }
+                },
                 _count: {
                     select: { videos: true }
                 }
@@ -31,10 +34,10 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { name, password } = await request.json()
+        const { name, password, schoolId, grade, schoolYear } = await request.json()
 
         if (!name || !password) {
-            return NextResponse.json({ error: 'Name and password required' }, { status: 400 })
+            return NextResponse.json({ error: 'クラス名とパスワードは必須です' }, { status: 400 })
         }
 
         const passwordHash = await bcrypt.hash(password, 10)
@@ -43,12 +46,20 @@ export async function POST(request: Request) {
             data: {
                 name,
                 passwordHash,
+                schoolId: schoolId || null,
+                grade: grade || null,
+                schoolYear: schoolYear || null,
             },
+            include: {
+                school: {
+                    select: { id: true, name: true }
+                }
+            }
         })
 
         return NextResponse.json(newClass)
     } catch (error) {
         console.error('Create class error:', error)
-        return NextResponse.json({ error: 'Failed to create class' }, { status: 500 })
+        return NextResponse.json({ error: 'クラスの作成に失敗しました' }, { status: 500 })
     }
 }
