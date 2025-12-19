@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { ArrowLeft, Plus, Video as VideoIcon, Upload, FileVideo, X, CheckCircle, Trash2 } from 'lucide-react'
@@ -15,9 +16,19 @@ interface VideoData {
     status: string
 }
 
+interface ClassData {
+    id: string
+    name: string
+    school: {
+        id: string
+        name: string
+    } | null
+}
+
 export default function ClassVideosPage() {
     const params = useParams<{ classId: string }>()
     const [videos, setVideos] = useState<VideoData[]>([])
+    const [classData, setClassData] = useState<ClassData | null>(null)
     const [showForm, setShowForm] = useState(false)
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -44,9 +55,32 @@ export default function ClassVideosPage() {
 
     useEffect(() => {
         if (params?.classId) {
-            fetchVideos()
+            fetchData()
         }
     }, [params?.classId])
+
+    const fetchData = async () => {
+        setLoading(true)
+        try {
+            const classId = Array.isArray(params?.classId) ? params.classId[0] : params?.classId
+
+            // Fetch Class Details (including school)
+            const classRes = await fetch(`/api/admin/classes/${classId}`)
+            if (classRes.ok) {
+                setClassData(await classRes.json())
+            }
+
+            // Fetch Videos
+            const videosRes = await fetch(`/api/admin/classes/${classId}/videos`)
+            if (videosRes.ok) {
+                setVideos(await videosRes.json())
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const fetchVideos = async () => {
         try {
@@ -57,8 +91,6 @@ export default function ClassVideosPage() {
             }
         } catch (e) {
             console.error(e)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -203,14 +235,32 @@ export default function ClassVideosPage() {
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="hover:bg-slate-200 dark:hover:bg-slate-800">
-                    <ArrowLeft className="h-5 w-5" />
+                <Button variant="ghost" onClick={() => {
+                    if (classData?.school?.id) {
+                        router.push(`/admin/schools/${classData.school.id}`)
+                    } else {
+                        router.push('/admin/dashboard')
+                    }
+                }}>
+                    <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+                        <Link href="/admin/dashboard" className="hover:text-indigo-600 transition-colors">ダッシュボード</Link>
+                        <span>/</span>
+                        {classData?.school && (
+                            <>
+                                <Link href={`/admin/schools/${classData.school.id}`} className="hover:text-indigo-600 transition-colors">
+                                    {classData.school.name}
+                                </Link>
+                                <span>/</span>
+                            </>
+                        )}
+                    </div>
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">
-                        クラス動画管理
+                        {classData?.name || 'クラス'} の動画
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">
                         このクラスで公開する動画を管理します
                     </p>
                 </div>

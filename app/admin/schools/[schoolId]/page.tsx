@@ -1,125 +1,233 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Button } from '@/app/components/ui/button'
+import { Input } from '@/app/components/ui/input'
+import { ArrowLeft, Plus, Users, Video, Trash2, ArrowRight } from 'lucide-react'
 
-interface Class {
+interface ClassData {
     id: string
     name: string
     grade: string | null
     schoolYear: string | null
+    _count: {
+        videos: number
+    }
 }
 
 interface School {
     id: string
     name: string
-    classes: Class[]
+    classes: ClassData[]
 }
 
 export default function SchoolDetailPage({ params }: { params: Promise<{ schoolId: string }> }) {
     const { schoolId } = use(params)
     const [school, setSchool] = useState<School | null>(null)
     const [loading, setLoading] = useState(true)
+    const [showForm, setShowForm] = useState(false)
+    const [newClassName, setNewClassName] = useState('')
+    const [newClassPassword, setNewClassPassword] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState('')
+    const router = useRouter()
 
     useEffect(() => {
-        const fetchSchool = async () => {
-            try {
-                const res = await fetch(`/api/admin/schools/${schoolId}`)
-                if (res.ok) {
-                    const data = await res.json()
-                    setSchool(data)
-                }
-            } catch (e) {
-                console.error('Failed to fetch school:', e)
-            } finally {
-                setLoading(false)
-            }
-        }
         fetchSchool()
     }, [schoolId])
 
+    const fetchSchool = async () => {
+        try {
+            const res = await fetch(`/api/admin/schools/${schoolId}`)
+            if (res.ok) {
+                const data = await res.json()
+                setSchool(data)
+            }
+        } catch (e) {
+            console.error('Failed to fetch school:', e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCreateClass = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsSubmitting(true)
+        setError('')
+
+        try {
+            const res = await fetch('/api/admin/classes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: newClassName,
+                    password: newClassPassword,
+                    schoolId: schoolId
+                }),
+            })
+
+            if (res.ok) {
+                setNewClassName('')
+                setNewClassPassword('')
+                setShowForm(false)
+                fetchSchool()
+            } else {
+                const data = await res.json()
+                setError(data.error || 'クラスの作成に失敗しました')
+            }
+        } catch (error) {
+            console.error('Failed to create class:', error)
+            setError('ネットワークエラーが発生しました')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    const deleteClass = async (classId: string, name: string) => {
+        if (!confirm(`「${name}」とそのすべての動画を削除しますか？\nこの操作は取り消せません。`)) return
+        try {
+            const res = await fetch(`/api/admin/classes/${classId}`, {
+                method: 'DELETE'
+            })
+            if (res.ok) {
+                fetchSchool()
+            } else {
+                const data = await res.json()
+                alert(data.error || 'クラスの削除に失敗しました')
+            }
+        } catch (error) {
+            console.error('Failed to delete class:', error)
+        }
+    }
+
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
             </div>
         )
     }
 
     if (!school) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-xl mb-4">園が見つかりません</p>
-                    <Link href="/admin/schools" className="text-cyan-400 hover:underline">
-                        園一覧に戻る
-                    </Link>
+                    <p className="text-xl mb-4 text-slate-800 dark:text-white">園が見つかりません</p>
+                    <Button onClick={() => router.push('/admin/dashboard')}>
+                        ダッシュボードに戻る
+                    </Button>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 text-white">
-            {/* Header */}
-            <header className="bg-slate-800/50 backdrop-blur-md border-b border-slate-700 sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/admin/schools" className="text-slate-400 hover:text-white transition-colors">
-                            ← 園一覧
-                        </Link>
-                        <h1 className="text-xl font-bold">{school.name}</h1>
+        <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" onClick={() => router.push('/admin/dashboard')}>
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">
+                            {school.name}
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+                            クラスの管理と動画へのアクセス
+                        </p>
                     </div>
                 </div>
-            </header>
+                <Button onClick={() => setShowForm(!showForm)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {showForm ? 'キャンセル' : 'クラスを追加'}
+                </Button>
+            </div>
 
-            <main className="max-w-4xl mx-auto px-4 py-8">
-                {/* Classes List */}
-                <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
-                    <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold">クラス一覧 ({school.classes.length})</h2>
-                        <Link
-                            href={`/admin/dashboard`}
-                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg text-sm font-medium transition-colors"
-                        >
-                            クラスを追加
-                        </Link>
-                    </div>
-
-                    {school.classes.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400">
-                            この園にはクラスが登録されていません
+            {showForm && (
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 fade-in duration-200">
+                    <h2 className="text-lg font-bold mb-4">新規クラス登録</h2>
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                            {error}
                         </div>
-                    ) : (
-                        <ul className="divide-y divide-slate-700">
-                            {school.classes.map((cls) => (
-                                <li key={cls.id} className="p-4 hover:bg-slate-700/30 transition-colors">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <Link
-                                                href={`/admin/classes/${cls.id}/videos`}
-                                                className="text-lg font-medium text-cyan-400 hover:text-cyan-300 hover:underline"
-                                            >
-                                                {cls.name}
-                                            </Link>
-                                            <div className="flex gap-4 mt-1 text-sm text-slate-400">
-                                                {cls.grade && <span>学年: {cls.grade}</span>}
-                                                {cls.schoolYear && <span>年度: {cls.schoolYear}</span>}
-                                            </div>
-                                        </div>
-                                        <Link
-                                            href={`/admin/classes/${cls.id}/videos`}
-                                            className="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm transition-colors"
-                                        >
-                                            動画管理
-                                        </Link>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
                     )}
+                    <form onSubmit={handleCreateClass} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <Input
+                                    label="クラス名"
+                                    placeholder="例: チューリップ組"
+                                    value={newClassName}
+                                    onChange={(e) => setNewClassName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="共通パスワード"
+                                    placeholder="保護者配布用"
+                                    value={newClassPassword}
+                                    onChange={(e) => setNewClassPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="flex items-end">
+                                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting ? '登録中...' : '登録する'}
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </main>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {school.classes.map((c) => (
+                    <div
+                        key={c.id}
+                        className="group bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all duration-200"
+                    >
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                <Users className="h-6 w-6" />
+                            </div>
+                            <span className="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
+                                動画数: {c._count?.videos || 0}
+                            </span>
+                        </div>
+                        <h3 className="text-xl font-bold mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {c.name}
+                        </h3>
+                        <p className="text-sm text-slate-500 mb-6">
+                            {c.grade || ''} {c.schoolYear || ''}
+                        </p>
+                        <div className="flex gap-2">
+                            <Button
+                                className="flex-1 hover:gap-2 transition-all"
+                                onClick={() => router.push(`/admin/classes/${c.id}/videos`)}
+                            >
+                                動画を管理
+                                <ArrowRight className="ml-1 h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => deleteClass(c.id, c.name)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+
+                {!loading && school.classes.length === 0 && !showForm && (
+                    <div className="col-span-full text-center py-12 text-slate-500 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                        クラスがまだありません。「クラスを追加」ボタンから登録してください。
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
