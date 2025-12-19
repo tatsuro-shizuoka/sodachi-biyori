@@ -18,12 +18,25 @@ model Admin {
   updatedAt    DateTime @updatedAt
 }
 
+// --- New School Hierarchy ---
+
+model School {
+  id        String   @id @default(uuid())
+  name      String
+  classes   Class[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Class {
   id           String   @id @default(uuid())
   name         String
   grade        String?  // e.g., "Year 1"
   schoolYear   String?  // e.g., "2025"
   passwordHash String   // Shared Check Password
+  
+  schoolId     String?
+  school       School?  @relation(fields: [schoolId], references: [id])
   
   // Relations
   videos       Video[]

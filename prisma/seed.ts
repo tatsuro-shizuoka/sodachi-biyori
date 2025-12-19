@@ -7,6 +7,13 @@ async function main() {
     const adminPasswordHash = await bcrypt.hash('admin123', 10)
     const classPasswordHash = await bcrypt.hash('class123', 10)
 
+    // 0. Default School
+    const school = await prisma.school.create({
+        data: {
+            name: 'そだち園', // Sodachi School
+        }
+    })
+
     // Admin
     const admin = await prisma.admin.upsert({
         where: { username: 'admin' },
@@ -23,7 +30,8 @@ async function main() {
             name: 'さくら組',
             grade: '年少',
             schoolYear: '2025',
-            passwordHash: classPasswordHash, // 'class123'
+            passwordHash: classPasswordHash,
+            schoolId: school.id
         }
     })
 
@@ -33,11 +41,18 @@ async function main() {
             name: 'ひまわり組',
             grade: '年長',
             schoolYear: '2025',
-            passwordHash: classPasswordHash, // 'class123'
+            passwordHash: classPasswordHash,
+            schoolId: school.id
         }
     })
 
-    // Videos for Sakura
+    // Migration: Update any existing classes without school
+    await prisma.class.updateMany({
+        where: { schoolId: null },
+        data: { schoolId: school.id }
+    })
+
+    console.log({ admin, school, sakura, himawari })
     await prisma.video.create({
         data: {
             title: '入園式 2025',
