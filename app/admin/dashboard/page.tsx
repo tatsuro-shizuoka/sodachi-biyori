@@ -81,6 +81,10 @@ export default function AdminDashboardPage() {
                     </p>
                 </div>
                 <div className="flex space-x-3">
+                    <Button variant="outline" onClick={() => router.push('/admin/schools')}>
+                        <Users className="mr-2 h-4 w-4" />
+                        園管理
+                    </Button>
                     <Button variant="outline" onClick={() => router.push('/admin/videos/upload')}>
                         <Video className="mr-2 h-4 w-4" />
                         動画をアップロード
