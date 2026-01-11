@@ -670,7 +670,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                 ) : cloudflareId ? (
                     <iframe
                         ref={iframeRef}
-                        src={`https://iframe.videodelivery.net/${cloudflareId}?preload=true&poster=${encodeURIComponent(thumbnailUrl || '')}`}
+                        src={`https://iframe.videodelivery.net/${cloudflareId}?autoplay=true&preload=true&poster=${encodeURIComponent(thumbnailUrl || '')}`}
                         className="w-full h-full rounded-2xl border-none"
                         allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                         allowFullScreen={true}
