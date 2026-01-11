@@ -35,6 +35,39 @@ export async function GET(
     }
 }
 
+// PATCH /api/admin/classes/[classId] - Update a class
+export async function PATCH(
+    request: Request,
+    { params }: { params: Promise<{ classId: string }> }
+) {
+    try {
+        const session = await getAdminSession()
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const { classId } = await params
+        const { name, grade, schoolYear, adminMemo, password } = await request.json()
+
+        const data: any = {}
+        if (name !== undefined) data.name = name
+        if (grade !== undefined) data.grade = grade
+        if (schoolYear !== undefined) data.schoolYear = schoolYear
+        if (adminMemo !== undefined) data.adminMemo = adminMemo
+        if (password !== undefined) data.password = password
+
+        const updatedClass = await prisma.class.update({
+            where: { id: classId },
+            data
+        })
+
+        return NextResponse.json(updatedClass)
+    } catch (error) {
+        console.error('Error updating class:', error)
+        return NextResponse.json({ error: 'Failed to update class' }, { status: 500 })
+    }
+}
+
 // DELETE /api/admin/classes/[classId] - Delete a class and all its videos
 export async function DELETE(
     request: Request,
@@ -48,32 +81,8 @@ export async function DELETE(
 
         const { classId } = await params
 
-        // Delete in transaction: videos, child relations, guardian settings, then class
-        await prisma.$transaction(async (tx) => {
-            // Delete all favorites for videos in this class
-            await tx.favorite.deleteMany({
-                where: { video: { classId } }
-            })
-
-            // Delete all videos in this class
-            await tx.video.deleteMany({
-                where: { classId }
-            })
-
-            // Delete child-classroom relations
-            await tx.childClassroom.deleteMany({
-                where: { classId }
-            })
-
-            // Delete guardian classroom settings
-            await tx.guardianClassroomSetting.deleteMany({
-                where: { classId }
-            })
-
-            // Delete the class
-            await tx.class.delete({
-                where: { id: classId }
-            })
+        await prisma.class.delete({
+            where: { id: classId }
         })
 
         return NextResponse.json({ success: true })

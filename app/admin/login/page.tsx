@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                     <div className="space-y-4">
                         <Input
                             label=""
-                            className="bg-[#333] border-none text-white h-12"
+                            className="bg-white border-none text-slate-900 h-12"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
                         />
                         <Input
                             label=""
-                            className="bg-[#333] border-none text-white h-12"
+                            className="bg-white border-none text-slate-900 h-12"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

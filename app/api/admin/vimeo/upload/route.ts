@@ -36,13 +36,23 @@ export async function POST(request: Request) {
                     size: size
                 },
                 name: name,
-                description: description
+                description: description,
+                // privacy: {
+                //     view: 'disable', // Not allowed on Basic plan
+                //     embed: 'public'
+                // }
             })
         })
 
         if (!response.ok) {
-            const error = await response.json()
-            return NextResponse.json({ error: error }, { status: response.status })
+            const errorText = await response.text()
+            console.error('[Vimeo API Error]:', response.status, response.statusText, errorText)
+            try {
+                const errorJson = JSON.parse(errorText)
+                return NextResponse.json({ error: errorJson }, { status: response.status })
+            } catch (e) {
+                return NextResponse.json({ error: errorText || 'Unknown Vimeo Error' }, { status: response.status })
+            }
         }
 
         const data = await response.json()
@@ -54,7 +64,7 @@ export async function POST(request: Request) {
         })
 
     } catch (error) {
-        console.error('Vimeo API Error:', error)
+        console.error('Vimeo API Internal Error:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

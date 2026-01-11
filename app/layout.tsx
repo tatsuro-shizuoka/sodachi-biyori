@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Outfit } from 'next/font/google'
+import { Outfit, Zen_Maru_Gothic } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegistration from './components/ServiceWorkerRegistration'
+import { LoadingScreen } from './components/lp/LoadingScreen'
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
+const zenMaru = Zen_Maru_Gothic({ weight: ['300', '400', '500', '700'], subsets: ['latin'], variable: '--font-zen-maru' })
 
 export const metadata: Metadata = {
   title: '育ち日和',
@@ -39,7 +41,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={outfit.variable}>
+      <body className={`${outfit.variable} ${zenMaru.variable} font-sans`} suppressHydrationWarning>
         <ServiceWorkerRegistration />
         {children}
       </body>

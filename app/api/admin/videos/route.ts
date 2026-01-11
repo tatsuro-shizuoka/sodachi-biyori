@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         const body = await request.json()
-        const { title, description, classId, recordedOn, vimeoId, status } = body
+        const { title, description, classId, recordedOn, vimeoId, status, videoUrl, thumbnailUrl } = body
 
         if (!title || !classId) {
             return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 })
@@ -26,8 +26,8 @@ export async function POST(request: Request) {
                 classId,
                 recordedOn: recordedOn ? new Date(recordedOn) : new Date(),
                 vimeoVideoId: vimeoId || null,
-                videoUrl: `https://vimeo.com/${vimeoId || 'placeholder'}`, // Fallback
-                thumbnailUrl: 'https://images.unsplash.com/photo-1628260412297-a3377e45006f?w=800&auto=format&fit=crop', // Placeholder
+                videoUrl: videoUrl || `https://vimeo.com/${vimeoId || 'placeholder'}`,
+                thumbnailUrl: thumbnailUrl || 'https://images.unsplash.com/photo-1628260412297-a3377e45006f?w=800&auto=format&fit=crop',
                 status: status || 'draft',
                 isDownloadable: false
             }

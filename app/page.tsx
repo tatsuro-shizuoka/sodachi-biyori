@@ -30,9 +30,10 @@ export default function LoginPage() {
         const data = await res.json()
         setError(data.error || 'ログインに失敗しました')
       } else {
-        router.push('/gallery')
+        const data = await res.json()
+        router.push(data.redirectTo || '/gallery')
       }
-    } catch (err) {
+    } catch {
       setError('システムエラーが発生しました')
     } finally {
       setLoading(false)
@@ -96,9 +97,9 @@ export default function LoginPage() {
             <Link href="/signup" className="text-blue-600 hover:underline font-medium">
               新規登録はこちら
             </Link>
-            <a href="/admin/login" className="text-slate-400 hover:text-blue-500 transition-colors">
+            <Link href="/admin/login" className="text-slate-400 hover:text-blue-500 transition-colors">
               管理者はこちら
-            </a>
+            </Link>
           </div>
         </form>
       </div>

@@ -24,20 +24,10 @@ export async function POST(request: Request) {
         }
 
         // 2. Find Class by Password
-        // Since we don't have class ID input, we must iterate classes OR specific UI forces class selection.
-        // Spec says "Class Password" input only.
-        // We iterate classes to find match? Or do we assume unique passwords?
-        // Spec 2-2 says "Classrooms table has class_password_hash... match hash". 
-        // We'll iterate all classes to find the matching one.
-
-        const classes = await prisma.class.findMany()
-        let matchedClass = null
-        for (const cls of classes) {
-            if (await bcrypt.compare(classPassword, cls.passwordHash)) {
-                matchedClass = cls
-                break
-            }
-        }
+        const matchedClass = await prisma.class.findFirst({
+            where: { password: classPassword },
+            include: { school: true }
+        }) as any
 
         if (!matchedClass) {
             return NextResponse.json({ error: 'クラスパスワードが正しくありません' }, { status: 400 })
@@ -92,11 +82,14 @@ export async function POST(request: Request) {
             return guardian
         })
 
-        // 4. Create Session (JWT)
+        // 4. Create Session (JWT) with School Slug
+        const schoolSlug = matchedClass.school?.slug || 'sodachi-en'
+
         const token = await new SignJWT({
             id: result.id,
             email: result.email,
-            name: result.name
+            name: result.name,
+            schoolSlugs: [schoolSlug]
         })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
@@ -112,7 +105,7 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7 // 7 days
         })
 
-        return NextResponse.json({ success: true })
+        return NextResponse.json({ success: true, redirectTo: `/${schoolSlug}/gallery` })
 
     } catch (error) {
         console.error('Signup error:', error)

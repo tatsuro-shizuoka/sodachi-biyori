@@ -26,9 +26,12 @@ async function resetAndSeed() {
 
     // Create School
     const school = await prisma.school.create({
-        data: { name: 'そだち園' }
+        data: {
+            name: 'そだち園',
+            slug: 'sodachi-en'
+        }
     })
-    console.log(`  📍 Created school: ${school.name}`)
+    console.log(`  📍 Created school: ${school.name} (slug: ${(school as any).slug})`)
 
     // Create Classes
     const sakura = await prisma.class.create({
@@ -36,7 +39,7 @@ async function resetAndSeed() {
             name: 'さくら組',
             grade: '年少',
             schoolYear: '2025',
-            passwordHash: classPasswordHash,
+            password: 'class123',
             schoolId: school.id
         }
     })
@@ -47,7 +50,7 @@ async function resetAndSeed() {
             name: 'ひまわり組',
             grade: '年長',
             schoolYear: '2025',
-            passwordHash: classPasswordHash,
+            password: 'class123',
             schoolId: school.id
         }
     })
@@ -93,6 +96,67 @@ async function resetAndSeed() {
         }
     })
     console.log(`  🎬 Created video: 運動会の練習 (ひまわり組)`)
+
+    // Create Guardian and Child
+    const taro = await prisma.child.create({
+        data: {
+            name: '山田 太郎',
+            birthday: new Date('2021-04-01')
+        }
+    })
+
+    // Link Child to Sakura Class
+    await prisma.childClassroom.create({
+        data: {
+            childId: taro.id,
+            classId: sakura.id,
+            schoolYear: '2025'
+        }
+    })
+
+    const hanako = await prisma.child.create({
+        data: {
+            name: '佐藤 花子',
+            birthday: new Date('2020-04-01')
+        }
+    })
+
+    // Link Hana to Himawari Class
+    await prisma.childClassroom.create({
+        data: {
+            childId: hanako.id,
+            classId: himawari.id,
+            schoolYear: '2025'
+        }
+    })
+
+    // Create Guardian
+    const guardian = await prisma.guardian.create({
+        data: {
+            name: '山田 保護者',
+            email: 'parent@example.com',
+            passwordHash: await bcrypt.hash('password123', 10),
+        }
+    })
+
+    // Link Guardian to Taro
+    await prisma.guardianChild.create({
+        data: {
+            guardianId: guardian.id,
+            childId: taro.id
+        }
+    })
+
+    // Create access settings
+    await prisma.guardianClassroomSetting.create({
+        data: {
+            guardianId: guardian.id,
+            classId: sakura.id,
+            notifyNewVideo: true
+        }
+    })
+
+    console.log(`  👨‍👩‍👧 Created guardian: ${guardian.email} (Password: password123) linked to ${taro.name}`)
 
     console.log('')
     console.log('🎉 Demo data reset complete!')

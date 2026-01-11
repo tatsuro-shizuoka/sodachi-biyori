@@ -43,7 +43,7 @@ export default function FavoriteButton({ videoId, initialIsFavorited, className 
             <Heart
                 className={cn(
                     "h-6 w-6 transition-colors",
-                    isFavorited ? "text-pink-500 fill-pink-500" : "text-slate-400 hover:text-pink-500"
+                    isFavorited ? "text-pink-500 fill-pink-500 animate-heart-bounce" : "text-slate-400 hover:text-pink-500"
                 )}
             />
         </button>

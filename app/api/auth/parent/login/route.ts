@@ -5,26 +5,25 @@ import { cookies } from 'next/headers'
 
 export async function POST(request: Request) {
     try {
-        const { password } = await request.json()
+        const { password, schoolSlug } = await request.json()
 
         if (!password) {
             return NextResponse.json({ error: 'Password required' }, { status: 400 })
         }
 
-        // Find class by partial match or just try to find ANY class matching? 
-        // The requirement says "password only". This implies we search ALL classes to see if this password matches ANY of them.
-        // This is slightly inefficient (O(N) bcrypt checks) but acceptable for a kindergarten with < 20 classes.
-        // Optimization: stored hash of the password? No, bcrypt is salted.
-        // BETTER APPROACH: Maybe the user should select a class, OR we try them all. 
-        // "Password only" usually implies unique passwords per class.
+        // Find classes, optionally filtered by schoolSlug
+        const whereClause: any = {}
+        if (schoolSlug) {
+            whereClause.school = { slug: schoolSlug }
+        }
 
-        // Let's implement "Try all classes" for the "Password Only" seamless experience.
-        const classes = await prisma.class.findMany()
+        const classes = await prisma.class.findMany({
+            where: whereClause
+        })
 
         let matchedClass = null
         for (const cls of classes) {
-            const isValid = await bcrypt.compare(password, cls.passwordHash)
-            if (isValid) {
+            if (cls.password === password) {
                 matchedClass = cls
                 break
             }

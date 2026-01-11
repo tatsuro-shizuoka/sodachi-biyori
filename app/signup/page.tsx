@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/app/components/ui/input'
 import { Button } from '@/app/components/ui/button'
 import { Lock, User, Mail, Smile, Key } from 'lucide-react'
 import Link from 'next/link'
 
-export default function SignupPage() {
+function SignupForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [formData, setFormData] = useState({
         guardianName: '',
         childName: '',
@@ -18,6 +19,13 @@ export default function SignupPage() {
     })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        const code = searchParams?.get('code')
+        if (code) {
+            setFormData(prev => ({ ...prev, classPassword: code }))
+        }
+    }, [searchParams])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -40,7 +48,7 @@ export default function SignupPage() {
             if (!res.ok) {
                 setError(data.error || '登録に失敗しました')
             } else {
-                router.push('/gallery') // Redirect to dashboard after successful signup
+                router.push(data.redirectTo || '/gallery')
             }
         } catch (err) {
             setError('システムエラーが発生しました')
@@ -159,5 +167,13 @@ export default function SignupPage() {
                 &copy; 2025 育ち日和
             </footer>
         </div>
+    )
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SignupForm />
+        </Suspense>
     )
 }

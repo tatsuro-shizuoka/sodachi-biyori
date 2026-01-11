@@ -13,17 +13,49 @@ export async function POST(request: Request) {
         }
 
         const guardian = await prisma.guardian.findUnique({
-            where: { email }
+            where: { email },
+            include: {
+                children: {
+                    include: {
+                        child: {
+                            include: {
+                                classes: {
+                                    include: {
+                                        class: {
+                                            include: {
+                                                school: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         })
 
         if (!guardian || !(await bcrypt.compare(password, guardian.passwordHash))) {
             return NextResponse.json({ error: 'メールアドレスまたはパスワードが正しくありません' }, { status: 401 })
         }
 
+        // Collect all school slugs associated with the guardian
+        const schoolSlugs = new Set<string>()
+        guardian.children.forEach(gc => {
+            gc.child.classes.forEach(cc => {
+                if (cc.class.school?.slug) {
+                    schoolSlugs.add(cc.class.school.slug)
+                }
+            })
+        })
+
+        console.log('[DEBUG] Login: Found school slugs:', Array.from(schoolSlugs))
+
         const token = await signGuardianToken({
             id: guardian.id,
             email: guardian.email,
-            name: guardian.name
+            name: guardian.name,
+            schoolSlugs: Array.from(schoolSlugs)
         })
 
         const cookieStore = await cookies()
@@ -35,7 +67,9 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7 // 7 days
         })
 
-        return NextResponse.json({ success: true })
+        // Redirect to the first available school or default
+        const primarySlug = Array.from(schoolSlugs)[0] || 'sodachi-en'
+        return NextResponse.json({ success: true, redirectTo: `/${primarySlug}/gallery` })
 
     } catch (error) {
         console.error('Guardian login error:', error)

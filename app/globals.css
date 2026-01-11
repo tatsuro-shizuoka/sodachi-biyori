@@ -4,32 +4,51 @@
 
 @layer base {
   :root {
-    --background: 240 25% 98%;
-    /* Slate 50ish */
+    /* Cream background - warm and inviting */
+    --background: 48 100% 98%;
+    /* #FFFDF5 */
+
+    /* Readable dark grey, not pure black */
     --foreground: 222 47% 11%;
-    /* Slate 900 */
+
+    /* Pure white for cards to pop against cream bg */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
+
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    /* Blue 600 */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+
+    /* Soft Orange/Yellow - warm primary */
+    --primary: 38 92% 64%;
+    /* #F4B942 approx */
+    --primary-foreground: 0 0% 100%;
+
+    /* Sprout Green - safe secondary */
+    --secondary: 96 54% 75%;
+    /* #97D87D approx */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 60 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Sky Blue - accent */
+    --accent: 195 53% 79%;
+    /* #8ECDDD approx */
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+
+    --border: 45 30% 90%;
+    --input: 45 30% 90%;
+    --ring: 38 92% 64%;
+
+    --radius: 1rem;
+    /* More rounded */
   }
 
   .dark {
+    /* Keeping dark mode but maybe soften it later? For now standard slate */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -58,10 +77,189 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Applying the friendly font */
+  .font-sans {
+    font-family: var(--font-zen-maru), var(--font-outfit), sans-serif;
+  }
 }
+
+/* Animations - Refined for Elegance */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes wiggle {
+
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes heart-bounce {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.3);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Slower, subtler fall */
+@keyframes fall-straight {
+  0% {
+    transform: translateY(-10vh) translateX(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  90% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(110vh) translateX(10px);
+    opacity: 0;
+  }
+}
+
+/* Gentler sway */
+@keyframes fall-sway {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  25% {
+    transform: translateY(20vh) translateX(15px) rotate(15deg);
+  }
+
+  50% {
+    transform: translateY(50vh) translateX(-10px) rotate(30deg);
+  }
+
+  75% {
+    transform: translateY(80vh) translateX(15px) rotate(45deg);
+  }
+
+  100% {
+    transform: translateY(110vh) translateX(0px) rotate(60deg);
+    opacity: 0;
+  }
+}
+
+/* Slower swim */
+@keyframes swim {
+  0% {
+    transform: translateX(110vw) translateY(0);
+  }
+
+  25% {
+    transform: translateX(50vw) translateY(-10px);
+  }
+
+  50% {
+    transform: translateX(0vw) translateY(0);
+  }
+
+  75% {
+    transform: translateX(-50vw) translateY(10px);
+  }
+
+  100% {
+    transform: translateX(-110vw) translateY(0);
+  }
+}
+
+/* Slower rise */
+@keyframes rise {
+  0% {
+    transform: translateY(110vh) scale(0.8);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.6;
+  }
+
+  80% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-10vh) scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float 15s ease-in-out infinite;
+  /* Much slower */
+}
+
+.animate-wiggle {
+  animation: wiggle 6s ease-in-out infinite;
+  /* Slower */
+}
+
+.animate-heart-bounce {
+  animation: heart-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-delay-100 {
+  animation-delay: 1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 3s;
+}
+
+.animate-delay-500 {
+  animation-delay: 5s;
+}
+
+.animate-delay-700 {
+  animation-delay: 7s;
+}
+
 
 /* Custom Scrollbar for Sidebar */
 .custom-scrollbar::-webkit-scrollbar {
@@ -72,7 +270,44 @@
   background: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 20px;
+
+/* Shine Effect */
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.animate-shine {
+  animation: shine 3s linear infinite;
+}
+
+@keyframes gradient-x {
+
+  0%,
+  100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+@keyframes accumulate {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
 }

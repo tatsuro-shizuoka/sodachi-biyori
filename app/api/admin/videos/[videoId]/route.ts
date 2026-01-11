@@ -38,15 +38,36 @@ export async function PATCH(
 
     try {
         const { videoId } = await params
-        const { status } = await request.json()
+        const body = await request.json()
+        const {
+            status,
+            title,
+            description,
+            recordedOn,
+            adminMemo,
+            startAt,
+            endAt,
+            categoryId
+        } = body
 
-        if (!status || !['draft', 'published', 'processing'].includes(status)) {
-            return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+        const data: any = {}
+        if (status !== undefined) {
+            if (!['draft', 'published', 'processing'].includes(status)) {
+                return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+            }
+            data.status = status
         }
+        if (title !== undefined) data.title = title
+        if (description !== undefined) data.description = description
+        if (recordedOn !== undefined) data.recordedOn = recordedOn ? new Date(recordedOn) : null
+        if (adminMemo !== undefined) data.adminMemo = adminMemo
+        if (startAt !== undefined) data.startAt = startAt ? new Date(startAt) : null
+        if (endAt !== undefined) data.endAt = endAt ? new Date(endAt) : null
+        if (categoryId !== undefined) data.categoryId = categoryId || null
 
         const video = await prisma.video.update({
             where: { id: videoId },
-            data: { status }
+            data
         })
 
         return NextResponse.json(video)
@@ -68,8 +89,12 @@ export async function DELETE(
         const { videoId } = await params
 
         // Delete favorites first, then the video
+        // Delete all related data first
         await prisma.$transaction(async (tx) => {
             await tx.favorite.deleteMany({ where: { videoId } })
+            await tx.videoView.deleteMany({ where: { videoId } })
+            await tx.reactionLog.deleteMany({ where: { videoId } })
+            await tx.videoFaceTag.deleteMany({ where: { videoId } })
             await tx.video.delete({ where: { id: videoId } })
         })
 

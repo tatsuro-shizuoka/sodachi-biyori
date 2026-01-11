@@ -1,18 +1,20 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getGuardianSession } from '@/lib/auth'
+import { cookies } from 'next/headers'
 
 export async function GET() {
-    const session = await getGuardianSession()
+    const guardianSession = await getGuardianSession()
+    const cookieStore = await cookies()
+    const parentSession = cookieStore.get('parent_session')?.value
 
-    if (!session) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Determine access method
+    let classIds: string[] = []
 
-    try {
-        // Fetch Guardian with Children and their Classes
+    if (guardianSession) {
+        // Full guardian access - fetch via guardian->child->class chain
         const guardian = await prisma.guardian.findUnique({
-            where: { id: (session as any).id },
+            where: { id: (guardianSession as any).id },
             include: {
                 children: {
                     include: {
@@ -26,30 +28,55 @@ export async function GET() {
             }
         })
 
-        if (!guardian) {
-            return NextResponse.json({ error: 'Guardian not found' }, { status: 404 })
+        if (guardian) {
+            classIds = guardian.children.flatMap(gc =>
+                gc.child.classes.map(cc => cc.classId)
+            )
         }
+    }
 
-        // Collect all Class IDs
-        // Structure: Guardian -> GuardianChild[] -> Child -> ChildClassroom[] -> ClassId
-        const classIds = guardian.children.flatMap(gc =>
-            gc.child.classes.map(cc => cc.classId)
-        )
+    if (parentSession) {
+        // Parent (class password) access - direct class access
+        // parentSession is the classId
+        if (!classIds.includes(parentSession)) {
+            classIds.push(parentSession)
+        }
+    }
 
+    if (classIds.length === 0) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    try {
         // Fetch videos for these classes
         const videos = await prisma.video.findMany({
             where: {
                 classId: { in: classIds },
-                status: 'published'
+                status: 'published',
+                OR: [
+                    { startAt: null },
+                    { startAt: { lte: new Date() } }
+                ],
+                AND: [
+                    {
+                        OR: [
+                            { endAt: null },
+                            { endAt: { gte: new Date() } }
+                        ]
+                    }
+                ]
             },
             include: {
                 class: {
                     select: { name: true }
                 },
-                favorites: {
-                    where: { guardianId: (session as any).id },
+                category: {
+                    select: { id: true, name: true }
+                },
+                favorites: guardianSession ? {
+                    where: { guardianId: (guardianSession as any).id },
                     select: { id: true }
-                }
+                } : undefined
             },
             orderBy: { createdAt: 'desc' }
         })
@@ -57,7 +84,7 @@ export async function GET() {
         // Map to include 'isFavorited' boolean
         const videosWithFav = videos.map(v => ({
             ...v,
-            isFavorited: v.favorites.length > 0,
+            isFavorited: guardianSession ? (v.favorites?.length || 0) > 0 : false,
             favorites: undefined // Remove raw relation data
         }))
 

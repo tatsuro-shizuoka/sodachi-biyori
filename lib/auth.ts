@@ -46,7 +46,7 @@ export async function getAdminSession() {
     return await verifyAdminToken(token)
 }
 
-export async function signGuardianToken(payload: { id: string; email: string; name: string }) {
+export async function signGuardianToken(payload: { id: string; email: string; name: string; schoolSlugs: string[] }) {
     const token = await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()

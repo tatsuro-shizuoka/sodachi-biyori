@@ -40,12 +40,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'クラス名とパスワードは必須です' }, { status: 400 })
         }
 
-        const passwordHash = await bcrypt.hash(password, 10)
-
         const newClass = await prisma.class.create({
             data: {
                 name,
-                passwordHash,
+                password, // Plain text
                 schoolId: schoolId || null,
                 grade: grade || null,
                 schoolYear: schoolYear || null,

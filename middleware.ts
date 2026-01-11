@@ -1,60 +1,79 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyAdminToken, verifyGuardianToken } from './lib/auth'
+import { jwtVerify } from 'jose'
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'development_secret_key_123')
+
+async function verifyGuardianToken(token: string) {
+    try {
+        const { payload } = await jwtVerify(token, secret)
+        return payload as { id: string; email: string; name: string; schoolSlugs: string[] }
+    } catch (e) {
+        return null
+    }
+}
 
 export async function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname
+    const { pathname } = request.nextUrl
 
-    // 1. Admin Routes (pages and APIs)
-    if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
-        // Allow login page and auth API without token
-        if (path === '/admin/login' || path.startsWith('/api/auth/admin')) {
-            return NextResponse.next()
-        }
+    // Ignore API routes, static files, login page, public assets
+    // Also ignore /watch/ route logic if it's not under a school slug (though we migrated it)
+    // We specifically want to protect /:schoolSlug/* routes
 
-        const token = request.cookies.get('admin_session')?.value
-        const session = token ? await verifyAdminToken(token) : null
+    // Regex to match /[schoolSlug]/... but exclude special folders if any
+    // assuming schoolSlug is not 'api', '_next', 'admin', etc.
+    const schoolSlugMatch = pathname.match(/^\/([a-zA-Z0-9-]+)(\/|$)/)
 
-        if (!session) {
-            // For API routes, return 401 instead of redirect
-            if (path.startsWith('/api/')) {
-                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-            }
-            return NextResponse.redirect(new URL('/admin/login', request.url))
-        }
-        return NextResponse.next()
-    }
+    // Skip if system path
+    if (!schoolSlugMatch) return NextResponse.next()
 
-    // 2. Public Routes (Do not protect these)
-    // - / : Login Page
-    // - /signup : Signup Page
-    // - /api/auth/* : Auth APIs
-    // - /manifest.json, /sw.js : PWA files
-    // - /icons/* : App icons
-    if (
-        path === '/' ||
-        path === '/signup' ||
-        path.startsWith('/api/auth') ||
-        path === '/manifest.json' ||
-        path === '/sw.js' ||
-        path.startsWith('/icons/')
-    ) {
-        return NextResponse.next()
-    }
+    const slug = schoolSlugMatch[1]
+    const systemPaths = ['api', '_next', 'admin', 'favicon.ico', 'signup', 'login', 'uploads', 'lp', 'models', 'icons', 'images']
+    if (systemPaths.includes(slug)) return NextResponse.next()
 
-    // 3. Guardian Protected Routes
-    // Protects /gallery, /watch, /settings, and related APIs (except public auth)
-    const guardianToken = request.cookies.get('guardian_session')?.value
-    const guardianSession = guardianToken ? await verifyGuardianToken(guardianToken) : null
+    // Assuming any other path starting with a segment is a school page
+    // Now verify session
+    const token = request.cookies.get('guardian_session')?.value
 
-    if (!guardianSession) {
-        // Redirect to Login if not authenticated
+    if (!token) {
+        // If requesting a protected school page without token -> redirect to login
         return NextResponse.redirect(new URL('/', request.url))
     }
 
-    return NextResponse.next()
+    const payload = await verifyGuardianToken(token)
+
+    if (!payload) {
+        console.log('[DEBUG] Middleware: Invalid token')
+        // Invalid token
+        return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    // Check if user has access to this school slug
+    if (payload.schoolSlugs && payload.schoolSlugs.includes(slug)) {
+        return NextResponse.next()
+    }
+
+    console.log(`[DEBUG] Middleware: Access denied for slug '${slug}'. User schoolSlugs: ${JSON.stringify(payload.schoolSlugs)}`)
+
+    // Log cookie domain/path details if possible (limited in middleware)
+    console.log('[DEBUG] Middleware: Cookie present:', !!token)
+
+    // Access denied (404 to hide existence, or 403)
+    // Returning 404 via rewrite is better for security "existence hiding"
+    // But for UX, maybe redirect to their Allowed home?
+    // Let's return a 404 response for now.
+    return new NextResponse('Not Found', { status: 404 })
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         */
+        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    ],
 }

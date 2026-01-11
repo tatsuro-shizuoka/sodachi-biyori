@@ -4,9 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/app/components/ui/input'
 import { Button } from '@/app/components/ui/button'
-import { ArrowLeft, Upload, FileVideo, X, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Upload, FileVideo, X, CheckCircle, Sparkles, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
-import * as tus from 'tus-js-client'
 
 interface ClassInfo {
     id: string
@@ -18,7 +17,8 @@ export default function AdminUploadPage() {
     const [classes, setClasses] = useState<ClassInfo[]>([])
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState(0)
-    const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
+    const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'analyzing' | 'success' | 'error'>('idle')
+    const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [formData, setFormData] = useState({
@@ -40,8 +40,18 @@ export default function AdminUploadPage() {
     useEffect(() => {
         fetch('/api/admin/classes')
             .then(res => res.json())
-            .then(data => setClasses(data))
-            .catch(err => console.error(err))
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setClasses(data)
+                } else {
+                    console.error('Expected array of classes but got:', data)
+                    setClasses([])
+                }
+            })
+            .catch(err => {
+                console.error(err)
+                setClasses([])
+            })
     }, [])
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,44 +88,51 @@ export default function AdminUploadPage() {
 
         setUploadState('uploading')
         setProgress(0)
+        setError(null)
 
         try {
-            // 1. Get Upload Link from Vimeo via our API
-            const linkRes = await fetch('/api/admin/vimeo/upload', {
+            // 1. Get Cloudflare Upload Link
+            const linkRes = await fetch('/api/admin/cloudflare/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     size: file.size,
-                    name: formData.title || file.name,
-                    description: formData.description || ''
+                    name: formData.title || file.name
                 })
             })
 
+            const data = await linkRes.json()
             if (!linkRes.ok) {
-                const errorData = await linkRes.json()
-                throw new Error(errorData.error || 'Failed to get upload link')
+                throw new Error(data.error || 'Failed to get upload link')
             }
 
-            const { uploadLink, vimeoId, uri } = await linkRes.json()
+            const { uploadLink, cfId } = data
 
-            // 2. Upload to Vimeo using TUS protocol
+            // 2. Upload via XHR with FormData
             await new Promise<void>((resolve, reject) => {
-                const upload = new tus.Upload(file, {
-                    uploadUrl: uploadLink,
-                    onError: (error) => {
-                        console.error('Vimeo upload failed:', error)
-                        reject(error)
-                    },
-                    onProgress: (bytesUploaded, bytesTotal) => {
-                        const percentage = (bytesUploaded / bytesTotal) * 100
+                const xhr = new XMLHttpRequest()
+                xhr.open('POST', uploadLink, true)
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percentage = (e.loaded / e.total) * 100
                         setProgress(percentage)
-                    },
-                    onSuccess: () => {
-                        console.log('Vimeo upload complete:', uri)
-                        resolve()
                     }
-                })
-                upload.start()
+                }
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve()
+                    } else {
+                        reject(new Error(`Cloudflare upload failed: ${xhr.statusText}`))
+                    }
+                }
+
+                xhr.onerror = () => reject(new Error('Network error during Cloudflare upload'))
+
+                const uploadFormData = new FormData()
+                uploadFormData.append('file', file)
+                xhr.send(uploadFormData)
             })
 
             // 3. Save metadata to database
@@ -124,23 +141,36 @@ export default function AdminUploadPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    vimeoVideoId: vimeoId,
-                    videoUrl: `https://vimeo.com/${vimeoId}`,
-                    thumbnailUrl: 'https://placehold.co/600x400/1e293b/white?text=Video',
-                    status: 'published' // Set to published so users can see immediately
+                    vimeoVideoId: null,
+                    videoUrl: `https://videodelivery.net/${cfId}`,
+                    thumbnailUrl: `https://videodelivery.net/${cfId}/thumbnails/thumbnail.jpg?height=720`,
+                    status: 'published'
                 })
             })
 
-            if (saveRes.ok) {
-                setUploadState('success')
-                setTimeout(() => router.push('/admin/dashboard'), 1500)
-            } else {
-                setUploadState('error')
+            if (!saveRes.ok) throw new Error('Failed to save metadata')
+
+            const savedVideo = await saveRes.json()
+
+            // 4. Trigger AI Analysis
+            setUploadState('analyzing')
+            try {
+                await fetch('/api/admin/videos/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ videoId: savedVideo.id })
+                })
+            } catch (e) {
+                console.error('AI Analysis failed but video was saved.', e)
             }
 
-        } catch (error) {
+            setUploadState('success')
+            setTimeout(() => router.push('/admin/dashboard'), 1500)
+
+        } catch (error: any) {
             console.error('Upload error:', error)
             setUploadState('error')
+            setError(error.message || 'アップロード中にエラーが発生しました')
         }
     }
 
@@ -158,13 +188,14 @@ export default function AdminUploadPage() {
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">対象クラス</label>
                         <select
-                            className="w-full h-11 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent"
+                            className="w-full h-11 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent disabled:opacity-50"
                             required
                             value={formData.classId}
+                            disabled={uploadState !== 'idle'}
                             onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
                         >
                             <option value="">クラスを選択してください</option>
-                            {classes.map(cls => (
+                            {classes?.map?.(cls => (
                                 <option key={cls.id} value={cls.id}>{cls.name}</option>
                             ))}
                         </select>
@@ -177,6 +208,7 @@ export default function AdminUploadPage() {
                             <Input
                                 placeholder="例：4月 入園式"
                                 required
+                                disabled={uploadState !== 'idle'}
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             />
@@ -186,6 +218,7 @@ export default function AdminUploadPage() {
                             <Input
                                 type="date"
                                 required
+                                disabled={uploadState !== 'idle'}
                                 value={formData.recordedOn}
                                 onChange={(e) => setFormData({ ...formData, recordedOn: e.target.value })}
                             />
@@ -195,8 +228,9 @@ export default function AdminUploadPage() {
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">説明文</label>
                         <textarea
-                            className="w-full min-h-[100px] px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-h-[100px] px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                             placeholder="動画の内容について..."
+                            disabled={uploadState !== 'idle'}
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
@@ -204,7 +238,7 @@ export default function AdminUploadPage() {
 
                     {/* File Upload Area */}
                     <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">動画ファイル</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">動画ファイル (Cloudflareへアップロード)</label>
 
                         <input
                             type="file"
@@ -216,7 +250,7 @@ export default function AdminUploadPage() {
 
                         {!file ? (
                             <div
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={() => uploadState === 'idle' && fileInputRef.current?.click()}
                                 onDragOver={onDragOver}
                                 onDragLeave={onDragLeave}
                                 onDrop={onDrop}
@@ -226,6 +260,7 @@ export default function AdminUploadPage() {
                                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                         : 'bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-blue-500'
                                     }
+                                    ${uploadState !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}
                                 `}
                             >
                                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -241,19 +276,20 @@ export default function AdminUploadPage() {
                                     <div className="relative rounded-lg overflow-hidden bg-black aspect-video shadow-md">
                                         <video
                                             src={previewUrl}
-                                            controls
                                             className="w-full h-full object-contain"
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setFile(null)
-                                                setPreviewUrl(null)
-                                            }}
-                                            className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white p-1 rounded-full backdrop-blur-sm transition-colors"
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
+                                        {uploadState === 'idle' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFile(null)
+                                                    setPreviewUrl(null)
+                                                }}
+                                                className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white p-1 rounded-full backdrop-blur-sm transition-colors"
+                                            >
+                                                <X className="h-5 w-5" />
+                                            </button>
+                                        )}
                                     </div>
                                 )}
 
@@ -270,38 +306,52 @@ export default function AdminUploadPage() {
                             </div>
                         )}
 
-                        {/* Progress Bar */}
-                        {uploadState === 'uploading' && (
-                            <div className="mt-4">
-                                <div className="flex justify-between text-xs text-slate-600 mb-1">
-                                    <span>アップロード中...</span>
-                                    <span>{progress.toFixed(0)}%</span>
+                        {/* Status UI */}
+                        <div className="mt-4">
+                            {uploadState === 'uploading' && (
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                                        <span className="flex items-center gap-1.5"><Upload className="h-3.5 w-3.5 animate-bounce" /> アップロード中...</span>
+                                        <span className="font-bold">{progress.toFixed(0)}%</span>
+                                    </div>
+                                    <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700 overflow-hidden">
+                                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                                    </div>
                                 </div>
-                                <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
-                                    <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
-                                </div>
-                            </div>
-                        )}
+                            )}
 
-                        {uploadState === 'success' && (
-                            <div className="mt-4 flex items-center text-green-600 text-sm font-medium">
-                                <CheckCircle className="h-5 w-5 mr-2" /> アップロード完了！ダッシュボードに戻ります...
-                            </div>
-                        )}
-                        {uploadState === 'error' && (
-                            <div className="mt-4 text-red-600 text-sm font-medium">
-                                エラーが発生しました。再試行してください。
-                            </div>
-                        )}
+                            {uploadState === 'analyzing' && (
+                                <div className="flex items-center text-blue-600 text-sm font-bold animate-pulse bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                                    <Sparkles className="h-5 w-5 mr-3 text-orange-400" /> AI 解析中です... （顔認証・チャプター作成）
+                                </div>
+                            )}
+
+                            {uploadState === 'success' && (
+                                <div className="flex items-center text-green-600 text-sm font-bold bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-100 dark:border-green-800">
+                                    <CheckCircle className="h-5 w-5 mr-3" /> アップロード & 解析完了！ダッシュボードに戻ります...
+                                </div>
+                            )}
+
+                            {uploadState === 'error' && (
+                                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 flex items-start gap-3">
+                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-bold text-red-700 dark:text-red-300">エラーが発生しました</p>
+                                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</p>
+                                        <button onClick={() => setUploadState('idle')} className="mt-2 text-xs font-bold text-red-500 hover:underline">閉じて再試行</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="pt-6 flex justify-end">
                         <Button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white min-w-[150px]"
-                            disabled={!file || uploadState === 'uploading' || uploadState === 'success'}
+                            className="bg-blue-600 hover:bg-blue-700 text-white min-w-[160px] h-12 rounded-xl font-bold shadow-lg shadow-blue-500/20"
+                            disabled={!file || uploadState !== 'idle'}
                         >
-                            {uploadState === 'uploading' ? '送信中...' : 'アップロード開始'}
+                            {uploadState === 'uploading' ? 'アップロード中...' : uploadState === 'analyzing' ? '解析中...' : 'アップロード開始'}
                         </Button>
                     </div>
                 </form>

@@ -40,8 +40,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: '園名を入力してください' }, { status: 400 })
         }
 
+        const slug = name.trim()
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '') || `school-${Date.now()}`
+
         const school = await prisma.school.create({
-            data: { name: name.trim() }
+            data: {
+                name: name.trim(),
+                slug: slug
+            }
         })
 
         return NextResponse.json(school, { status: 201 })
