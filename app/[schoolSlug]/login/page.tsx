@@ -78,7 +78,8 @@ function SchoolLoginContent() {
                 const data = await res.json()
                 setError(data.error || 'クラスパスワードが違います')
             } else {
-                router.push(`/${schoolSlug}/gallery`)
+                const data = await res.json()
+                router.push(data.redirectTo || `/${schoolSlug}/gallery`)
             }
         } catch (err) {
             setError('システムエラーが発生しました')

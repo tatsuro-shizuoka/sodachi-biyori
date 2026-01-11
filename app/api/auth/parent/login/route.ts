@@ -18,7 +18,8 @@ export async function POST(request: Request) {
         }
 
         const classes = await prisma.class.findMany({
-            where: whereClause
+            where: whereClause,
+            include: { school: { select: { slug: true } } }
         })
 
         let matchedClass = null
@@ -43,7 +44,16 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7 // 7 days
         })
 
-        return NextResponse.json({ success: true, classId: matchedClass.id })
+        // Determine redirect URL based on class slug
+        const classSlug = matchedClass.slug || matchedClass.id
+        const redirectSchool = matchedClass.school?.slug || schoolSlug
+
+        return NextResponse.json({
+            success: true,
+            classId: matchedClass.id,
+            classSlug: classSlug,
+            redirectTo: `/${redirectSchool}/${classSlug}/gallery`
+        })
     } catch (error) {
         console.error('Parent login error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

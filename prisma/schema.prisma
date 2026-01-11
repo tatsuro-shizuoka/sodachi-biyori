@@ -39,6 +39,7 @@ model School {
 model Class {
   id               String                     @id @default(uuid())
   name             String
+  slug             String?                    // URL用のスラッグ (例: sakura, tanpopo)
   grade            String?
   schoolYear       String?
   password         String
@@ -51,6 +52,8 @@ model Class {
   school           School?                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   guardianSettings GuardianClassroomSetting[]
   videos           Video[]
+
+  @@unique([schoolId, slug])
 }
 
 model Video {
@@ -65,6 +68,7 @@ model Video {
   durationSec    Int?
   adminMemo      String?
   isDownloadable Boolean     @default(false)
+  isAllClasses   Boolean     @default(false)  // 全クラス共通かどうか
   categoryId     String?
   startAt        DateTime?
   endAt          DateTime?

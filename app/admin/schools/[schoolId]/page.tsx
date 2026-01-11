@@ -11,6 +11,7 @@ import { SponsorManager } from '@/app/components/admin/SponsorManager'
 interface ClassData {
     id: string
     name: string
+    slug: string | null
     grade: string | null
     schoolYear: string | null
     password: string
@@ -45,6 +46,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
     const [editingClass, setEditingClass] = useState<ClassData | null>(null)
     const [editClassFormData, setEditClassFormData] = useState({
         name: '',
+        slug: '',
         grade: '',
         schoolYear: '',
         password: '',
@@ -352,6 +354,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
                                 onChange={(e) => setEditClassFormData({ ...editClassFormData, password: e.target.value })}
                                 required
                             />
+                            <Input
+                                label="スラッグ (URL用、半角英数 例: sakura)"
+                                value={editClassFormData.slug}
+                                onChange={(e) => setEditClassFormData({ ...editClassFormData, slug: e.target.value })}
+                                placeholder="空欄の場合はIDが使用されます"
+                            />
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">管理者メモ</label>
                                 <textarea
@@ -445,6 +453,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
                                                 setEditingClass(cls)
                                                 setEditClassFormData({
                                                     name: cls.name,
+                                                    slug: cls.slug || '',
                                                     grade: cls.grade || '',
                                                     schoolYear: cls.schoolYear || '',
                                                     password: cls.password,
