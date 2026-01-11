@@ -426,6 +426,18 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         }
     }, [cloudflareId])
 
+    // Auto-play Cloudflare video after preroll ends
+    // This useEffect triggers when streamPlayer is initialized AND preroll has finished
+    useEffect(() => {
+        if (streamPlayer && prerollFinished && !isPrerollActive && !isMidrollActive) {
+            // Small delay to ensure everything is ready
+            const timer = setTimeout(() => {
+                streamPlayer.play().catch((e: any) => console.error('Autoplay after preroll failed:', e))
+            }, 200)
+            return () => clearTimeout(timer)
+        }
+    }, [streamPlayer, prerollFinished, isPrerollActive, isMidrollActive])
+
     // Listen for time updates on Cloudflare player for midroll detection
     useEffect(() => {
         if (!streamPlayer || isPrerollActive || isMidrollActive) return
