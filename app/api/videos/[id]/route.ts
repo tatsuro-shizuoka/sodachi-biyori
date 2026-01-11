@@ -72,9 +72,10 @@ export async function GET(
                 }
             }
         } else if (guardianSession) {
-            // Guardian logic
-            const videoSchoolId = videoData.class?.schoolId
-            if (guardianSession.schoolId === videoSchoolId) {
+            // Guardian logic - guardianSession contains schoolSlugs[], not schoolId
+            const videoSchoolSlug = videoData.class?.school?.slug
+            const guardianSchoolSlugs = guardianSession.schoolSlugs as string[] | undefined
+            if (videoSchoolSlug && guardianSchoolSlugs?.includes(videoSchoolSlug)) {
                 hasAccess = true
             }
         }
