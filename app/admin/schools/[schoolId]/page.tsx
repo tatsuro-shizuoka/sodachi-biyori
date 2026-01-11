@@ -417,7 +417,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
                                         className="bg-slate-50 dark:bg-slate-900"
                                         required
                                     />
-                                    required
+                                    <Input
+                                        placeholder="合言葉 (半角英数)"
+                                        value={newClassPassword}
+                                        onChange={(e) => setNewClassPassword(e.target.value)}
+                                        className="bg-slate-50 dark:bg-slate-900"
+                                        required
                                     />
                                     <Input
                                         placeholder="スラッグ (URL用、半角英数)"

@@ -28,11 +28,7 @@ export async function GET(
                         school: true
                     }
                 },
-                videoFaceTags: {
-                    include: {
-                        faceTag: true
-                    }
-                }
+                faceTags: true
             }
         })
 
@@ -93,10 +89,10 @@ export async function GET(
             videoUrl: videoData.videoUrl,
             thumbnailUrl: videoData.thumbnailUrl,
             analysisStatus: videoData.analysisStatus,
-            faceTags: videoData.videoFaceTags.map(vft => ({
-                id: vft.faceTag.id,
-                label: vft.faceTag.label,
-                imageUrl: vft.faceTag.imageUrl
+            faceTags: videoData.faceTags.map(ft => ({
+                id: ft.id,
+                label: ft.label,
+                thumbnailUrl: ft.thumbnailUrl
             }))
         })
 
