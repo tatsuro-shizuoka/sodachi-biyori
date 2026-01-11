@@ -184,14 +184,14 @@ export default function GalleryPage() {
                 </div>
 
                 {/* Category Filter */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <button
                         onClick={() => setSelectedCategory('all')}
                         className={cn(
-                            "px-4 py-2 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 border-2",
+                            "px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300",
                             selectedCategory === 'all'
-                                ? "bg-primary border-primary text-white shadow-md transform scale-105"
-                                : "bg-white border-slate-100 text-slate-600 hover:border-primary/50 hover:bg-orange-50"
+                                ? "bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg shadow-orange-200"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         )}
                     >
                         すべて
@@ -201,10 +201,10 @@ export default function GalleryPage() {
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
                             className={cn(
-                                "px-4 py-2 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 border-2",
+                                "px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300",
                                 selectedCategory === cat.id
-                                    ? "bg-secondary border-secondary text-white shadow-md transform scale-105"
-                                    : "bg-white border-slate-100 text-slate-600 hover:border-secondary/50 hover:bg-green-50"
+                                    ? "bg-gradient-to-r from-emerald-400 to-emerald-500 text-white shadow-lg shadow-emerald-200"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             )}
                         >
                             {cat.name}
@@ -216,10 +216,10 @@ export default function GalleryPage() {
                 <button
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     className={cn(
-                        "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold border-2 transition-all duration-300 whitespace-nowrap",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-300 whitespace-nowrap",
                         showFavoritesOnly
-                            ? "bg-pink-100 border-pink-200 text-pink-500 shadow-inner"
-                            : "bg-white border-slate-100 text-slate-500 hover:text-pink-400 hover:border-pink-100"
+                            ? "bg-gradient-to-r from-pink-400 to-pink-500 text-white shadow-lg shadow-pink-200"
+                            : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-pink-400"
                     )}
                 >
                     <Heart className={cn("h-4 w-4 transition-transform duration-300", showFavoritesOnly ? "fill-current scale-110" : "scale-100")} />
