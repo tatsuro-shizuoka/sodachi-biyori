@@ -30,6 +30,7 @@ interface VideoData {
     adminMemo?: string | null
     startAt?: string | null
     endAt?: string | null
+    isAllClasses?: boolean
     analysisStatus?: string | null
     _count?: {
         views: number
@@ -319,7 +320,8 @@ export default function ClassVideosPage() {
         recordedOn: '',
         startAt: '',
         endAt: '',
-        categoryId: ''
+        categoryId: '',
+        isAllClasses: false
     })
 
     // Edit Modal State
@@ -332,7 +334,8 @@ export default function ClassVideosPage() {
         adminMemo: '',
         startAt: '',
         endAt: '',
-        categoryId: ''
+        categoryId: '',
+        isAllClasses: false
     })
 
     // Category Manager State
@@ -839,7 +842,8 @@ export default function ClassVideosPage() {
                     recordedOn: '',
                     startAt: '',
                     endAt: '',
-                    categoryId: ''
+                    categoryId: '',
+                    isAllClasses: false
                 })
                 setUploadState('idle')
                 fetchVideos()
@@ -1199,6 +1203,19 @@ export default function ClassVideosPage() {
                                 />
                             </div>
                         </div>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="isAllClasses"
+                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                checked={createFormData.isAllClasses}
+                                onChange={(e) => setCreateFormData({ ...createFormData, isAllClasses: e.target.checked })}
+                            />
+                            <label htmlFor="isAllClasses" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                全クラス共通で公開する（園全体のお知らせなど）
+                            </label>
+                        </div>
+
                         <div className="border-t pt-4">
                             <input type="file" accept="video/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
                             {!file ? (
@@ -1310,6 +1327,14 @@ export default function ClassVideosPage() {
                                                     </div>
                                                 )}
                                             </div>
+                                            {video.isAllClasses && (
+                                                <div className="mb-2">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded textxs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                                        <Users className="h-3 w-3 mr-1" />
+                                                        全クラス公開
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             {/* AI Analysis Status */}
                                             {video.analysisStatus && (
@@ -1380,7 +1405,8 @@ export default function ClassVideosPage() {
                                                             adminMemo: video.adminMemo || '',
                                                             startAt: video.startAt ? new Date(video.startAt).toISOString().slice(0, 16) : '',
                                                             endAt: video.endAt ? new Date(video.endAt).toISOString().slice(0, 16) : '',
-                                                            categoryId: video.categoryId || ''
+                                                            categoryId: video.categoryId || '',
+                                                            isAllClasses: video.isAllClasses || false
                                                         })
                                                     }}
                                                 >
@@ -1455,6 +1481,12 @@ export default function ClassVideosPage() {
                                                             {video.category && (
                                                                 <div className="text-xs text-indigo-600 mt-0.5">{video.category.name}</div>
                                                             )}
+                                                            {video.isAllClasses && (
+                                                                <div className="text-xs text-purple-600 mt-0.5 flex items-center">
+                                                                    <Users className="h-3 w-3 mr-1" />
+                                                                    全クラス公開
+                                                                </div>
+                                                            )}
                                                             {video.adminMemo && (
                                                                 <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
                                                                     <Settings className="h-3 w-3" />
@@ -1501,7 +1533,8 @@ export default function ClassVideosPage() {
                                                                 adminMemo: video.adminMemo || '',
                                                                 startAt: video.startAt ? new Date(video.startAt).toISOString().slice(0, 16) : '',
                                                                 endAt: video.endAt ? new Date(video.endAt).toISOString().slice(0, 16) : '',
-                                                                categoryId: video.categoryId || ''
+                                                                categoryId: video.categoryId || '',
+                                                                isAllClasses: video.isAllClasses || false
                                                             })
                                                         }}>
                                                             <Edit3 className="h-4 w-4 text-slate-500" />
@@ -1587,6 +1620,19 @@ export default function ClassVideosPage() {
                                 </div>
                             </div>
 
+                            <div className="flex items-center space-x-2 pt-2">
+                                <input
+                                    type="checkbox"
+                                    id="edit-isAllClasses"
+                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                    checked={editVideoFormData.isAllClasses}
+                                    onChange={(e) => setEditVideoFormData({ ...editVideoFormData, isAllClasses: e.target.checked })}
+                                />
+                                <label htmlFor="edit-isAllClasses" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                    全クラス共通で公開する（園全体のお知らせなど）
+                                </label>
+                            </div>
+
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button type="button" variant="ghost" onClick={() => setEditingVideo(null)}>
                                     キャンセル
@@ -1598,6 +1644,7 @@ export default function ClassVideosPage() {
                         </form>
                     </div>
                 </div>
+
             )}
 
             {/* Video Player Modal */}

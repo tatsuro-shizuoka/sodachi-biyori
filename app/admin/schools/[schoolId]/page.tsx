@@ -40,6 +40,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [newClassName, setNewClassName] = useState('')
     const [newClassPassword, setNewClassPassword] = useState('')
+    const [newClassSlug, setNewClassSlug] = useState('')
     const [copiedClassId, setCopiedClassId] = useState<string | null>(null)
 
     // Edit Class State
@@ -83,13 +84,15 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
                 body: JSON.stringify({
                     name: newClassName,
                     password: newClassPassword,
-                    schoolId: schoolId
+                    schoolId: schoolId,
+                    slug: newClassSlug
                 }),
             })
 
             if (res.ok) {
                 setNewClassName('')
                 setNewClassPassword('')
+                setNewClassSlug('')
                 setShowCreateForm(false)
                 fetchSchool()
             } else {
@@ -414,12 +417,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ schoolI
                                         className="bg-slate-50 dark:bg-slate-900"
                                         required
                                     />
+                                    required
+                                    />
                                     <Input
-                                        placeholder="合言葉 (半角英数)"
-                                        value={newClassPassword}
-                                        onChange={(e) => setNewClassPassword(e.target.value)}
+                                        placeholder="スラッグ (URL用、半角英数)"
+                                        value={newClassSlug}
+                                        onChange={(e) => setNewClassSlug(e.target.value)}
                                         className="bg-slate-50 dark:bg-slate-900"
-                                        required
                                     />
                                 </div>
                                 <div className="flex justify-end gap-2">

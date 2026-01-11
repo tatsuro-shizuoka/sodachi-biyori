@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { Play, Calendar, Heart, Search, LayoutGrid, List, X, Loader2, Globe } from 'lucide-react'
+import { Play, Calendar, Heart, Search, LayoutGrid, List, X, Loader2, Globe, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/app/components/ui/input'
 import { Button } from '@/app/components/ui/button'
@@ -49,6 +49,19 @@ export default function AllClassesGalleryPage() {
             console.error(e)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleLogout = async () => {
+        try {
+            const res = await fetch('/api/auth/parent/logout', {
+                method: 'POST'
+            })
+            if (res.ok) {
+                router.push(`/${schoolSlug}/login`)
+            }
+        } catch (error) {
+            console.error('Logout failed:', error)
         }
     }
 
@@ -103,19 +116,30 @@ export default function AllClassesGalleryPage() {
                     <p className="text-slate-500 mt-2">園全体のイベント動画</p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white/50 p-1.5 rounded-xl border shadow-sm">
-                    <button
-                        onClick={() => setViewMode('grid')}
-                        className={cn("p-2 rounded-lg transition-all", viewMode === 'grid' ? "bg-white shadow text-primary" : "text-slate-400")}
+                <div className="flex items-center gap-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLogout}
+                        className="text-slate-500 hover:text-red-500 hover:bg-red-50"
                     >
-                        <LayoutGrid className="h-5 w-5" />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        className={cn("p-2 rounded-lg transition-all", viewMode === 'list' ? "bg-white shadow text-primary" : "text-slate-400")}
-                    >
-                        <List className="h-5 w-5" />
-                    </button>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        ログアウト
+                    </Button>
+                    <div className="flex items-center gap-2 bg-white/50 p-1.5 rounded-xl border shadow-sm">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={cn("p-2 rounded-lg transition-all", viewMode === 'grid' ? "bg-white shadow text-primary" : "text-slate-400")}
+                        >
+                            <LayoutGrid className="h-5 w-5" />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={cn("p-2 rounded-lg transition-all", viewMode === 'list' ? "bg-white shadow text-primary" : "text-slate-400")}
+                        >
+                            <List className="h-5 w-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 

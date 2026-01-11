@@ -67,7 +67,8 @@ export async function POST(
             endAt,
             recordedOn,
             categoryId,
-            vimeoVideoId
+            vimeoVideoId,
+            isAllClasses
         } = data
 
         if (!title || !videoUrl) {
@@ -86,7 +87,8 @@ export async function POST(
                 startAt: startAt ? new Date(startAt) : null,
                 endAt: endAt ? new Date(endAt) : null,
                 recordedOn: recordedOn ? new Date(recordedOn) : null,
-                categoryId: categoryId || null
+                categoryId: categoryId || null,
+                isAllClasses: isAllClasses || false
             },
             include: {
                 category: true,

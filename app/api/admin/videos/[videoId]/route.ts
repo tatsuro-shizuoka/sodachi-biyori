@@ -48,7 +48,8 @@ export async function PATCH(
             adminMemo,
             startAt,
             endAt,
-            categoryId
+            categoryId,
+            isAllClasses
         } = body
 
         const data: any = {}
@@ -65,6 +66,7 @@ export async function PATCH(
         if (startAt !== undefined) data.startAt = startAt ? new Date(startAt) : null
         if (endAt !== undefined) data.endAt = endAt ? new Date(endAt) : null
         if (categoryId !== undefined) data.categoryId = categoryId || null
+        if (isAllClasses !== undefined) data.isAllClasses = isAllClasses
 
         const video = await prisma.video.update({
             where: { id: videoId },

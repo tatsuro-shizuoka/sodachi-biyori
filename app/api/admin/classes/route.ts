@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { name, password, schoolId, grade, schoolYear } = await request.json()
+        const { name, password, schoolId, grade, schoolYear, slug } = await request.json()
 
         if (!name || !password) {
             return NextResponse.json({ error: 'クラス名とパスワードは必須です' }, { status: 400 })
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
                 schoolId: schoolId || null,
                 grade: grade || null,
                 schoolYear: schoolYear || null,
+                slug: slug || null,
             },
             include: {
                 school: {
