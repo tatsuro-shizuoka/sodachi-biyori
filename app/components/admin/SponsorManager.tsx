@@ -121,19 +121,22 @@ export function SponsorManager({ fixedSchoolId }: SponsorManagerProps) {
         setUploading(true)
         try {
             const file = e.target.files[0]
-            const formData = new FormData()
-            formData.append('file', file)
+            const uploadFormData = new FormData()
+            uploadFormData.append('file', file)
 
-            const res = await fetch('/api/admin/upload/image', {
+            // Use Cloudflare Images API
+            const res = await fetch('/api/admin/cloudflare/image-upload', {
                 method: 'POST',
-                body: formData
+                body: uploadFormData
             })
 
             if (res.ok) {
                 const data = await res.json()
-                setFormData(prev => ({ ...prev, imageUrl: data.url }))
+                setFormData(prev => ({ ...prev, imageUrl: data.imageUrl }))
             } else {
-                alert('画像のアップロードに失敗しました')
+                const errData = await res.json()
+                console.error('Image upload error:', errData)
+                alert(`画像のアップロードに失敗しました: ${errData.error || '不明なエラー'}`)
             }
         } catch (error) {
             console.error(error)
