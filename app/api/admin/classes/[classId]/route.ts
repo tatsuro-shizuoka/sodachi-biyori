@@ -47,10 +47,11 @@ export async function PATCH(
         }
 
         const { classId } = await params
-        const { name, grade, schoolYear, adminMemo, password } = await request.json()
+        const { name, slug, grade, schoolYear, adminMemo, password } = await request.json()
 
         const data: any = {}
         if (name !== undefined) data.name = name
+        if (slug !== undefined) data.slug = slug || null  // empty string -> null
         if (grade !== undefined) data.grade = grade
         if (schoolYear !== undefined) data.schoolYear = schoolYear
         if (adminMemo !== undefined) data.adminMemo = adminMemo
