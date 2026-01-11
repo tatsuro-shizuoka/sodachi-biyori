@@ -282,6 +282,11 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
 
     // Trigger midroll ad
     const triggerMidrollAd = (ad: any, resumeTime: number) => {
+        // Pause the main video before showing midroll
+        if (streamPlayer) {
+            streamPlayer.pause()
+        }
+
         setActiveMidrollAd(ad)
         setMidrollResumeTime(resumeTime)
         setIsMidrollActive(true)
@@ -348,6 +353,14 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const handlePrerollEnd = () => {
         setIsPrerollActive(false)
         setPrerollFinished(true)
+
+        // Auto-play the main video after preroll ends
+        // Using setTimeout to ensure the main video iframe is rendered
+        setTimeout(() => {
+            if (streamPlayer) {
+                streamPlayer.play().catch((e: any) => console.error('Failed to autoplay after preroll:', e))
+            }
+        }, 100)
     }
 
     const updateAdTimers = (current: number, duration: number) => {

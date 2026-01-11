@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Plus, Trash2, Edit3, Video, Calendar, ArrowLeft, Eye, EyeOff, SkipForward, Percent, FastForward } from 'lucide-react'
 import Link from 'next/link'
+import { DeleteConfirmModal } from '@/app/components/ui/DeleteConfirmModal'
 
 interface MidrollAd {
     id: string
@@ -30,6 +31,7 @@ export default function MidrollAdsPage() {
     const [editingId, setEditingId] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0)
+    const [deleteId, setDeleteId] = useState<string | null>(null)
 
     const [formData, setFormData] = useState({
         name: '',
@@ -151,12 +153,13 @@ export default function MidrollAdsPage() {
     }
 
     const handleDelete = async (id: string) => {
-        if (!confirm('この広告を削除しますか？')) return
         try {
             await fetch(`/api/admin/midroll-ads/${id}`, { method: 'DELETE' })
             fetchAds()
         } catch (e) {
             console.error(e)
+        } finally {
+            setDeleteId(null)
         }
     }
 
@@ -466,7 +469,7 @@ export default function MidrollAdsPage() {
                                 <button onClick={() => handleEdit(ad)} className="p-2 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 rounded-lg">
                                     <Edit3 className="h-4 w-4" />
                                 </button>
-                                <button onClick={() => handleDelete(ad.id)} className="p-2 bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-600 rounded-lg">
+                                <button onClick={() => setDeleteId(ad.id)} className="p-2 bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-600 rounded-lg">
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
@@ -474,6 +477,15 @@ export default function MidrollAdsPage() {
                     ))}
                 </div>
             )}
+
+            {/* 削除確認モーダル */}
+            <DeleteConfirmModal
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={() => deleteId && handleDelete(deleteId)}
+                title="ミッドロール広告を削除"
+                message="この広告を削除してもよろしいですか？この操作は取り消せません。"
+            />
         </div>
     )
 }

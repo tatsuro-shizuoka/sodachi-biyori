@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { deleteCloudflareVideo, extractCloudflareId } from '@/lib/cloudflare-delete'
 
 // GET /api/admin/videos/[videoId] - Get a specific video
 export async function GET(
@@ -88,7 +89,17 @@ export async function DELETE(
     try {
         const { videoId } = await params
 
-        // Delete favorites first, then the video
+        // Get the video first to get the videoUrl
+        const video = await prisma.video.findUnique({ where: { id: videoId } })
+
+        if (video?.videoUrl) {
+            // Delete from Cloudflare if it's a Cloudflare video
+            const cfId = extractCloudflareId(video.videoUrl)
+            if (cfId) {
+                await deleteCloudflareVideo(cfId)
+            }
+        }
+
         // Delete all related data first
         await prisma.$transaction(async (tx) => {
             await tx.favorite.deleteMany({ where: { videoId } })

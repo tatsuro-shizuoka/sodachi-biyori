@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { deleteCloudflareVideo, extractCloudflareId } from '@/lib/cloudflare-delete'
 
 export async function PUT(
     request: NextRequest,
@@ -50,6 +51,18 @@ export async function DELETE(
 
     try {
         const { id } = await context.params
+
+        // Get the ad first to get the videoUrl
+        const ad = await prisma.prerollAd.findUnique({ where: { id } })
+
+        if (ad?.videoUrl) {
+            // Delete from Cloudflare if it's a Cloudflare video
+            const cfId = extractCloudflareId(ad.videoUrl)
+            if (cfId) {
+                await deleteCloudflareVideo(cfId)
+            }
+        }
+
         await prisma.prerollAd.delete({ where: { id } })
         return NextResponse.json({ success: true })
     } catch (error) {
