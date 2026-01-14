@@ -71,6 +71,7 @@ export default function AllWatchPage() {
     return (
         <div className="max-w-5xl mx-auto p-4">
             <VideoPlayer
+                schoolSlug={schoolSlug}
                 videoUrl={video.videoUrl}
                 title={video.title}
                 thumbnailUrl={video.thumbnailUrl}
