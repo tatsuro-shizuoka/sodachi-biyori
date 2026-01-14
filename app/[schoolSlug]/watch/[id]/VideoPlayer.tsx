@@ -216,6 +216,64 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const [adRemaining, setAdRemaining] = useState(0)
     const [adMuted, setAdMuted] = useState(false)
 
+    // --- Ad Tracking Logic ---
+    const currentImpressionIdRef = useRef<string | null>(null)
+    const trackedMilestonesRef = useRef<Set<number>>(new Set())
+
+    const createImpression = async (type: 'preroll' | 'midroll', adId: string) => {
+        try {
+            const res = await fetch('/api/ads/impression', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    adType: type,
+                    [type === 'preroll' ? 'prerollAdId' : 'midrollAdId']: adId,
+                    schoolId: schoolSlug ? null : undefined, // Assuming schoolSlug represents context
+                    videoId: videoId
+                })
+            })
+            if (res.ok) {
+                const data = await res.json()
+                currentImpressionIdRef.current = data.id
+                trackedMilestonesRef.current.clear()
+            }
+        } catch (e) {
+            console.error('Failed to create impression', e)
+        }
+    }
+
+    const updateImpression = async (updates: any) => {
+        if (!currentImpressionIdRef.current) return
+        try {
+            await fetch('/api/ads/impression', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    impressionId: currentImpressionIdRef.current,
+                    ...updates
+                })
+            })
+        } catch (e) {
+            console.error('Failed to update impression', e)
+        }
+    }
+
+    const checkMilestones = (currentTime: number, duration: number) => {
+        if (!duration) return
+        const progress = (currentTime / duration) * 100
+        const milestones = [25, 50, 75, 100]
+
+        milestones.forEach(milestone => {
+            if (progress >= milestone && !trackedMilestonesRef.current.has(milestone)) {
+                trackedMilestonesRef.current.add(milestone)
+                updateImpression({
+                    [`reached${milestone}`]: true,
+                    watchTime: currentTime
+                })
+            }
+        })
+    }
+
     // --- Midroll Ad Logic ---
     const [midrollAds, setMidrollAds] = useState<any[]>([])
     const [activeMidrollAd, setActiveMidrollAd] = useState<any>(null)
@@ -294,22 +352,18 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         setAdRemaining(0)
 
         // Track impression
-        fetch('/api/ads/impression', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                adType: 'midroll',
-                midrollAdId: ad.id,
-                schoolId: null,
-                videoId: videoId
-            })
-        }).catch(e => console.error('Failed to track midroll impression', e))
+        createImpression('midroll', ad.id)
     }
 
     // Handle midroll end
     const handleMidrollEnd = () => {
+        // Track completion
+        updateImpression({ watchedFull: true, reached100: true })
+
         setIsMidrollActive(false)
         setActiveMidrollAd(null)
+        currentImpressionIdRef.current = null
+
         // Resume playback at saved position
         if (iframeRef.current && streamPlayer) {
             streamPlayer.currentTime = midrollResumeTime
@@ -324,6 +378,9 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         const skipAfter = activeMidrollAd?.skipAfterSeconds ?? 5
         const tillSkip = skipAfter - video.currentTime
         setSkipCountdown(tillSkip > 0 ? Math.ceil(tillSkip) : 0)
+
+        // Track milestones
+        checkMilestones(video.currentTime, video.duration)
     }
 
     useEffect(() => {
@@ -339,6 +396,8 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                     if (ad && ad.videoUrl) {
                         setPrerollAd(ad)
                         setIsPrerollActive(true)
+                        // Create impression for preroll
+                        createImpression('preroll', ad.id)
                     }
                 }
             } catch (e) {
@@ -351,8 +410,12 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     }, [schoolSlug])
 
     const handlePrerollEnd = () => {
+        // Track completion
+        updateImpression({ watchedFull: true, reached100: true })
+
         setIsPrerollActive(false)
         setPrerollFinished(true)
+        currentImpressionIdRef.current = null
 
         // Auto-play the main video after preroll ends
         // Using setTimeout to ensure the main video iframe is rendered
@@ -368,6 +431,11 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         const skipAfter = prerollAd?.skipAfterSeconds ?? 5
         const tillSkip = skipAfter - current
         setSkipCountdown(tillSkip > 0 ? Math.ceil(tillSkip) : 0)
+
+        // Track milestones for preroll/midroll (whichever is active)
+        if (isPrerollActive || isMidrollActive) {
+            checkMilestones(current, duration)
+        }
     }
 
     const handleAdTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -504,6 +572,23 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         }
     }
 
+    // Skip handlers
+    const handleSkipPreroll = () => {
+        if (adVimeoRef.current) {
+            // For vimeo, get current time is async, simplified for now
+            updateImpression({ skipped: true })
+        } else {
+            // Basic skip tracking
+            updateImpression({ skipped: true })
+        }
+        handlePrerollEnd()
+    }
+
+    const handleSkipMidroll = () => {
+        updateImpression({ skipped: true })
+        handleMidrollEnd()
+    }
+
     const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
     const vimeoId = getVimeoId(videoUrl)
 
@@ -554,7 +639,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                                 </div>
                             ) : (
                                 <button
-                                    onClick={handlePrerollEnd}
+                                    onClick={handleSkipPreroll}
                                     className="bg-black/60 hover:bg-black/80 text-white px-6 py-3 rounded-lg text-sm font-bold backdrop-blur-sm border border-white/20 transition-all flex items-center gap-2 animate-in fade-in slide-in-from-right-2"
                                 >
                                     広告をスキップ <ChevronRight className="h-4 w-4" />
@@ -576,7 +661,10 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                                     target="_blank"
                                     rel="noreferrer"
                                     className="bg-black/40 hover:bg-black/60 text-white px-4 py-2 rounded font-medium text-xs backdrop-blur-sm border border-white/20 transition-all flex items-center gap-2"
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        updateImpression({ clicked: true })
+                                    }}
                                 >
                                     {prerollAd.ctaText}
                                     <ExternalLink className="h-3 w-3" />
@@ -619,7 +707,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                                 </div>
                             ) : (
                                 <button
-                                    onClick={handleMidrollEnd}
+                                    onClick={handleSkipMidroll}
                                     className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg text-sm font-bold backdrop-blur-sm border border-white/20 transition-all flex items-center gap-2 animate-in fade-in slide-in-from-right-2"
                                 >
                                     広告をスキップ <ChevronRight className="h-4 w-4" />
@@ -641,7 +729,10 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                                     target="_blank"
                                     rel="noreferrer"
                                     className="bg-orange-600/60 hover:bg-orange-700 text-white px-4 py-2 rounded font-medium text-xs backdrop-blur-sm border border-white/20 transition-all flex items-center gap-2"
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        updateImpression({ clicked: true })
+                                    }}
                                 >
                                     {activeMidrollAd.ctaText}
                                     <ExternalLink className="h-3 w-3" />
