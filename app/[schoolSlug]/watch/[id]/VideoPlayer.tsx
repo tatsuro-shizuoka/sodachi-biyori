@@ -228,7 +228,8 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                 body: JSON.stringify({
                     adType: type,
                     [type === 'preroll' ? 'prerollAdId' : 'midrollAdId']: adId,
-                    schoolId: schoolSlug ? null : undefined, // Assuming schoolSlug represents context
+                    schoolId: null,
+                    schoolSlug: schoolSlug, // Pass slug for resolution
                     videoId: videoId
                 })
             })

@@ -8,13 +8,25 @@ export async function POST(request: Request) {
 
         const now = new Date()
 
+        // Resolve schoolId if only slug is provided
+        let schoolId = body.schoolId
+        if (!schoolId && body.schoolSlug) {
+            const school = await prisma.school.findFirst({
+                where: { slug: body.schoolSlug },
+                select: { id: true }
+            })
+            if (school) {
+                schoolId = school.id
+            }
+        }
+
         const impression = await prisma.adImpression.create({
             data: {
                 adType: body.adType,
                 prerollAdId: body.prerollAdId || null,
                 midrollAdId: body.midrollAdId || null,
                 sponsorId: body.sponsorId || null,
-                schoolId: body.schoolId || null,
+                schoolId: schoolId || null,
                 videoId: body.videoId || null,
                 guardianId: body.guardianId || null,
                 sessionId: body.sessionId || null,
