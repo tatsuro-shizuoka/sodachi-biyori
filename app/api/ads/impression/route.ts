@@ -20,6 +20,21 @@ export async function POST(request: Request) {
             }
         }
 
+        // Resolve User-Agent and Device Type
+        const userAgent = body.userAgent || request.headers.get('user-agent') || 'unknown'
+        let deviceType = body.deviceType
+
+        if (!deviceType && userAgent !== 'unknown') {
+            const ua = userAgent.toLowerCase()
+            if (ua.includes('tablet') || ua.includes('ipad') || (ua.includes('android') && !ua.includes('mobile'))) {
+                deviceType = 'tablet'
+            } else if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+                deviceType = 'mobile'
+            } else {
+                deviceType = 'desktop'
+            }
+        }
+
         const impression = await prisma.adImpression.create({
             data: {
                 adType: body.adType,
@@ -40,8 +55,8 @@ export async function POST(request: Request) {
                 reached75: body.reached75 || false,
                 reached100: body.reached100 || false,
                 clicked: body.clicked || false,
-                deviceType: body.deviceType || null,
-                userAgent: body.userAgent || null,
+                deviceType: deviceType || 'unknown',
+                userAgent: userAgent,
                 hourOfDay: now.getHours(),
                 dayOfWeek: now.getDay()
             }
