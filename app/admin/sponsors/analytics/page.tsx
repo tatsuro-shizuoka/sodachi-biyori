@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/app/components/ui/button'
-import { ArrowLeft, BarChart3, MousePointer2, Percent, SortAsc, SortDesc, Heart, Play, FastForward, Monitor, Smartphone, Tablet, Clock, Calendar, TrendingUp, Users, SkipForward, CheckCircle2, Filter, RefreshCw } from 'lucide-react'
+import { ArrowLeft, BarChart3, MousePointer2, Percent, SortAsc, SortDesc, Heart, Play, FastForward, Monitor, Smartphone, Tablet, Clock, Calendar, TrendingUp, Users, SkipForward, CheckCircle2, Filter, RefreshCw, Download, Building2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface AdMetrics {
@@ -27,6 +27,14 @@ interface AdMetrics {
     triggerValue?: number
 }
 
+interface SchoolMetrics {
+    schoolName: string
+    impressions: number
+    clicks: number
+    ctr: number
+    completionRate: number
+}
+
 interface AnalyticsData {
     summary: {
         totalImpressions: number
@@ -43,6 +51,7 @@ interface AnalyticsData {
     deviceBreakdown: { mobile: number, tablet: number, desktop: number, unknown: number }
     hourBreakdown: { hour: number, count: number }[]
     dayBreakdown: { day: string, count: number }[]
+    schoolBreakdown: SchoolMetrics[]
     dateRange: string
     adType: string
 }
@@ -54,6 +63,8 @@ export default function SponsorAnalyticsPage() {
     const [adType, setAdType] = useState('all')
     const [sortField, setSortField] = useState<string>('impressions')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
+    const [hoveredData, setHoveredData] = useState<{ x: number, y: number, label: string, value: string, subValue?: string } | null>(null)
 
     const fetchData = async () => {
         setLoading(true)
@@ -88,6 +99,42 @@ export default function SponsorAnalyticsPage() {
         return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
     }) : []
 
+    const downloadCSV = () => {
+        if (!sortedAds.length) return
+
+        // Define headers
+        const headers = ['広告名', '学校名', 'タイプ', 'インプレッション', 'クリック数', 'CTR(%)', '完了率(%)', 'スキップ率(%)', 'リーチ数']
+
+        // Convert data to CSV rows
+        const rows = sortedAds.map(ad => [
+            ad.name,
+            ad.schoolName,
+            ad.type === 'preroll' ? 'プリロール' : 'ミッドロール',
+            ad.impressions,
+            ad.clicks,
+            ad.ctr.toFixed(2),
+            ad.completionRate?.toFixed(1) || '0',
+            ad.skipRate?.toFixed(1) || '0',
+            ad.uniqueUsers || 0
+        ])
+
+        // Join with BOM for Excel compatibility
+        const csvContent = '\uFEFF' + [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n')
+
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `analytics_export_${new Date().toISOString().slice(0, 10)}.csv`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     const SortIcon = ({ field }: { field: string }) => {
         if (sortField !== field) return <span className="w-3 h-3 ml-1 inline-block opacity-30">↕</span>
         return sortDirection === 'asc' ? <SortAsc className="w-3 h-3 ml-1 inline-block" /> : <SortDesc className="w-3 h-3 ml-1 inline-block" />
@@ -116,9 +163,14 @@ export default function SponsorAnalyticsPage() {
                     </Link>
                     <h1 className="text-2xl font-bold">広告分析レポート</h1>
                 </div>
-                <Button variant="outline" onClick={fetchData} disabled={loading}>
-                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> 更新
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={downloadCSV} disabled={!sortedAds.length} title="CSVダウンロード">
+                        <Download className="h-4 w-4 mr-2" /> CSV
+                    </Button>
+                    <Button variant="outline" onClick={fetchData} disabled={loading}>
+                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> 更新
+                    </Button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -180,53 +232,149 @@ export default function SponsorAnalyticsPage() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Device Breakdown */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Monitor className="h-4 w-4" /> デバイス別</h3>
-                    <div className="space-y-3">
-                        <DeviceBar label="モバイル" icon={Smartphone} count={data.deviceBreakdown.mobile} total={totalDevices} color="bg-blue-500" />
-                        <DeviceBar label="タブレット" icon={Tablet} count={data.deviceBreakdown.tablet} total={totalDevices} color="bg-purple-500" />
-                        <DeviceBar label="デスクトップ" icon={Monitor} count={data.deviceBreakdown.desktop} total={totalDevices} color="bg-emerald-500" />
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Hour of Day */}
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Clock className="h-4 w-4" /> 時間帯別</h3>
-                    <div className="flex items-end h-24 gap-0.5">
+                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Clock className="h-4 w-4" /> 時間帯別視聴数</h3>
+                    <div className="flex items-end h-32 gap-0.5">
                         {data.hourBreakdown.map((h, i) => (
                             <div
                                 key={i}
-                                className="flex-1 bg-indigo-500 rounded-t hover:bg-indigo-600 transition-colors cursor-pointer group relative"
+                                className="flex-1 bg-indigo-500 rounded-t hover:bg-indigo-400 transition-colors cursor-pointer group relative"
                                 style={{ height: `${(h.count / maxHourCount) * 100}%`, minHeight: h.count > 0 ? '4px' : '0' }}
-                                title={`${h.hour}時: ${h.count}件`}
+                                onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect()
+                                    setHoveredData({
+                                        x: rect.left + rect.width / 2,
+                                        y: rect.top - 10,
+                                        label: `${h.hour}時台`,
+                                        value: `${h.count}回`,
+                                        subValue: '視聴'
+                                    })
+                                }}
+                                onMouseLeave={() => setHoveredData(null)}
                             />
                         ))}
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                        <span>0時</span>
-                        <span>12時</span>
-                        <span>23時</span>
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-2 font-mono">
+                        <span>0:00</span>
+                        <span>6:00</span>
+                        <span>12:00</span>
+                        <span>18:00</span>
+                        <span>23:00</span>
                     </div>
                 </div>
 
                 {/* Day of Week */}
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Calendar className="h-4 w-4" /> 曜日別</h3>
-                    <div className="flex items-end h-24 gap-1">
+                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Calendar className="h-4 w-4" /> 曜日別視聴数</h3>
+                    <div className="flex items-end h-32 gap-2">
                         {data.dayBreakdown.map((d, i) => {
                             const maxDay = Math.max(...data.dayBreakdown.map(x => x.count), 1)
                             return (
-                                <div key={i} className="flex-1 flex flex-col items-center">
+                                <div key={i} className="flex-1 flex flex-col items-center group">
                                     <div
-                                        className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors"
+                                        className="w-full bg-orange-500 rounded-t hover:bg-orange-400 transition-colors cursor-pointer"
                                         style={{ height: `${(d.count / maxDay) * 100}%`, minHeight: d.count > 0 ? '4px' : '0' }}
+                                        onMouseEnter={(e) => {
+                                            const rect = e.currentTarget.getBoundingClientRect()
+                                            setHoveredData({
+                                                x: rect.left + rect.width / 2,
+                                                y: rect.top - 10,
+                                                label: `${d.day}曜日`,
+                                                value: `${d.count}回`,
+                                                subValue: '視聴'
+                                            })
+                                        }}
+                                        onMouseLeave={() => setHoveredData(null)}
                                     />
-                                    <span className="text-[10px] text-slate-500 mt-1">{d.day}</span>
+                                    <span className="text-xs font-bold text-slate-500 mt-2">{d.day}</span>
                                 </div>
                             )
                         })}
+                    </div>
+                </div>
+            </div>
+
+            {/* School Breakdown & Device Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* School Breakdown */}
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Building2 className="h-4 w-4" /> 園別パフォーマンス (上位5園)</h3>
+                    <div className="space-y-4">
+                        {data.schoolBreakdown && data.schoolBreakdown.slice(0, 5).map((school, i) => {
+                            const maxImp = Math.max(...data.schoolBreakdown.map(s => s.impressions), 1)
+                            return (
+                                <div key={i} className="space-y-1">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="font-medium text-slate-700 dark:text-slate-200">{school.schoolName}</span>
+                                        <div className="flex gap-4 text-xs">
+                                            <span className="text-slate-500">{school.impressions.toLocaleString()} imp</span>
+                                            <span className="text-emerald-600 font-bold">CTR {school.ctr.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-2.5 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden flex">
+                                        <div
+                                            className="h-full bg-indigo-500 rounded-full relative group cursor-pointer"
+                                            style={{ width: `${(school.impressions / maxImp) * 100}%` }}
+                                            onMouseEnter={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect()
+                                                setHoveredData({
+                                                    x: rect.left + rect.width / 2,
+                                                    y: rect.top - 10,
+                                                    label: school.schoolName,
+                                                    value: `${school.impressions} imp`,
+                                                    subValue: `クリック: ${school.clicks} / CTR: ${school.ctr.toFixed(1)}%`
+                                                })
+                                            }}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        />
+                                    </div>
+                                </div>
+                            )
+                        })}
+                        {(!data.schoolBreakdown || data.schoolBreakdown.length === 0) && (
+                            <div className="text-center py-8 text-slate-500 text-sm">データがありません</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Device Breakdown */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Monitor className="h-4 w-4" /> デバイス別</h3>
+                    <div className="space-y-4">
+                        <DeviceBar
+                            label="モバイル" icon={Smartphone} count={data.deviceBreakdown.mobile} total={totalDevices} color="bg-blue-500"
+                            onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'モバイル', value: `${data.deviceBreakdown.mobile}回`, subValue: '視聴' })
+                            }}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <DeviceBar
+                            label="タブレット" icon={Tablet} count={data.deviceBreakdown.tablet} total={totalDevices} color="bg-purple-500"
+                            onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'タブレット', value: `${data.deviceBreakdown.tablet}回`, subValue: '視聴' })
+                            }}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <DeviceBar
+                            label="デスクトップ" icon={Monitor} count={data.deviceBreakdown.desktop} total={totalDevices} color="bg-emerald-500"
+                            onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'デスクトップ', value: `${data.deviceBreakdown.desktop}回`, subValue: '視聴' })
+                            }}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <DeviceBar
+                            label="不明" icon={CheckCircle2} count={data.deviceBreakdown.unknown} total={totalDevices} color="bg-slate-400"
+                            onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: '不明', value: `${data.deviceBreakdown.unknown}回`, subValue: '視聴' })
+                            }}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
                     </div>
                 </div>
             </div>
@@ -311,6 +459,22 @@ export default function SponsorAnalyticsPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Custom Tooltip */}
+            {hoveredData && (
+                <div
+                    className="fixed z-50 bg-slate-900/90 text-white text-xs rounded px-3 py-2 pointer-events-none shadow-xl backdrop-blur-sm transform -translate-x-1/2 -translate-y-full mt-[-8px] transition-all duration-75"
+                    style={{ left: hoveredData.x, top: hoveredData.y }}
+                >
+                    <div className="font-bold mb-0.5 text-center">{hoveredData.label}</div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-lg font-bold">{hoveredData.value}</span>
+                        {hoveredData.subValue && <span className="text-slate-300 text-[10px]">{hoveredData.subValue}</span>}
+                    </div>
+                    {/* Tiny Triangle Pointer */}
+                    <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-slate-900/90" />
+                </div>
+            )}
         </div>
     )
 }
@@ -336,14 +500,26 @@ function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: st
     )
 }
 
-function DeviceBar({ label, icon: Icon, count, total, color }: { label: string, icon: any, count: number, total: number, color: string }) {
+function DeviceBar({ label, icon: Icon, count, total, color, onMouseEnter, onMouseLeave }: {
+    label: string,
+    icon: any,
+    count: number,
+    total: number,
+    color: string,
+    onMouseEnter?: (e: any) => void,
+    onMouseLeave?: () => void
+}) {
     const percent = total > 0 ? (count / total) * 100 : 0
     return (
-        <div className="flex items-center gap-3">
-            <Icon className="h-4 w-4 text-slate-400" />
+        <div
+            className="flex items-center gap-3 group cursor-pointer"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
+            <Icon className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-600">{label}</span>
+                    <span className="text-slate-600 group-hover:font-bold transition-all">{label}</span>
                     <span className="font-mono text-slate-400">{count}</span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">

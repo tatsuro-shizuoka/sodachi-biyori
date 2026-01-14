@@ -158,6 +158,34 @@ export async function GET(request: Request) {
             count: impressions.filter(i => i.dayOfWeek === d).length
         }))
 
+        // School Breakdown
+        // Fetch all schools to map IDs to Names
+        const allSchools = await prisma.school.findMany({ select: { id: true, name: true } })
+        const schoolMap = new Map(allSchools.map(s => [s.id, s.name]))
+
+        const schoolStats = new Map<string, { impressions: number, clicks: number, completed: number }>()
+
+        impressions.forEach(imp => {
+            const schoolId = imp.schoolId || 'unknown'
+            const current = schoolStats.get(schoolId) || { impressions: 0, clicks: 0, completed: 0 }
+            schoolStats.set(schoolId, {
+                impressions: current.impressions + 1,
+                clicks: current.clicks + (imp.clicked ? 1 : 0),
+                completed: current.completed + (imp.watchedFull ? 1 : 0)
+            })
+        })
+
+        const schoolBreakdown = Array.from(schoolStats.entries()).map(([schoolId, stats]) => {
+            const total = stats.impressions
+            return {
+                schoolName: schoolId === 'unknown' ? '不明 (ログアウト中など)' : schoolMap.get(schoolId) || '削除された園',
+                impressions: total,
+                clicks: stats.clicks,
+                ctr: total > 0 ? (stats.clicks / total) * 100 : 0,
+                completionRate: total > 0 ? (stats.completed / total) * 100 : 0
+            }
+        }).sort((a, b) => b.impressions - a.impressions)
+
         // Overall summary
         const allAds = [...prerollData, ...midrollData]
         const totalImpressions = allAds.reduce((acc, ad) => acc + ad.impressions, 0) + sponsorData.reduce((acc, s) => acc + s.impressions, 0)
@@ -181,6 +209,7 @@ export async function GET(request: Request) {
             deviceBreakdown,
             hourBreakdown,
             dayBreakdown,
+            schoolBreakdown,
             dateRange,
             adType
         })
