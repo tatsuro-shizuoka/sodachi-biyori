@@ -214,7 +214,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const [hasCheckedPreroll, setHasCheckedPreroll] = useState(false)
     const [skipCountdown, setSkipCountdown] = useState(5)
     const [adRemaining, setAdRemaining] = useState(0)
-    const [adMuted, setAdMuted] = useState(false)
+    const [adMuted, setAdMuted] = useState(true)
 
     // --- Ad Tracking Logic ---
     const currentImpressionIdRef = useRef<string | null>(null)
@@ -608,8 +608,37 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const vimeoId = getVimeoId(videoUrl)
 
     return (
-        <div className="space-y-6">
-            <div className="aspect-video bg-black rounded-[2rem] shadow-2xl overflow-hidden ring-8 ring-slate-100 dark:ring-slate-800 relative">
+        <div className="space-y-6 relative">
+            <style jsx global>{`
+                @media (orientation: landscape) and (max-width: 920px) {
+                    .mobile-landscape-fullscreen {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 9999 !important;
+                        border-radius: 0 !important;
+                        max-width: none !important;
+                        margin: 0 !important;
+                    }
+                    /* Turn off ring/shadow in fullscreen */
+                    .mobile-landscape-fullscreen {
+                        box-shadow: none !important;
+                        --tw-ring-offset-width: 0px !important;
+                        --tw-ring-color: transparent !important;
+                    }
+                }
+            `}</style>
+            <div className={cn(
+                "aspect-video bg-black overflow-hidden relative transition-all duration-300 mobile-landscape-fullscreen",
+                // Mobile (default): No rounded corners, no ring, full width
+                "rounded-none shadow-sm ring-0",
+                // Desktop (MD and up): Rounded, Shadow, Ring
+                "md:rounded-[2rem] md:shadow-2xl md:ring-8 md:ring-slate-100 md:dark:ring-slate-800"
+            )}>
                 {isPrerollActive && prerollAd ? (
                     <div className="w-full h-full relative group">
                         {prerollVimeoId ? (
