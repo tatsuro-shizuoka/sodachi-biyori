@@ -90,6 +90,7 @@ export default async function WatchPage({ params }: { params: Promise<{ schoolSl
                             label: tag.label || 'Unknown',
                             thumbnailUrl: tag.thumbnailUrl
                         }))}
+                        schoolSlug={schoolSlug}
                     />
 
                     <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white">

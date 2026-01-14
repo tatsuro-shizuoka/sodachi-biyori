@@ -19,6 +19,7 @@ interface VideoPlayerProps {
         label: string
         thumbnailUrl?: string | null
     }>
+    schoolSlug: string
 }
 
 interface Particle {
@@ -28,7 +29,7 @@ interface Particle {
     y: number
 }
 
-export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisStatus, faceTags }: VideoPlayerProps) {
+export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisStatus, faceTags, schoolSlug }: VideoPlayerProps) {
     const hasLoggedView = useRef(false)
     const [counts, setCounts] = useState({ CLAP: 0, FLOWER: 0 })
     const [particles, setParticles] = useState<Particle[]>([])
@@ -206,8 +207,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const cloudflareId = getCloudflareId(videoUrl)
 
     // --- Preroll Ad Logic ---
-    const params = useParams()
-    const schoolSlug = params?.schoolSlug as string
+    // Remove useParams used for schoolSlug, now using prop.
     const [prerollAd, setPrerollAd] = useState<any>(null)
     const [isPrerollActive, setIsPrerollActive] = useState(false)
     const [prerollFinished, setPrerollFinished] = useState(false)
