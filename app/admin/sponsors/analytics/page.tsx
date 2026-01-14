@@ -261,13 +261,41 @@ export default function SponsorAnalyticsPage() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                <SummaryCard icon={BarChart3} label="インプレッション" value={data.summary.totalImpressions.toLocaleString()} color="indigo" />
-                <SummaryCard icon={MousePointer2} label="クリック数" value={data.summary.totalClicks.toLocaleString()} color="pink" />
-                <SummaryCard icon={Percent} label="CTR" value={`${data.summary.avgCtr.toFixed(2)}%`} color="emerald" />
-                <SummaryCard icon={CheckCircle2} label="視聴完了率" value={`${data.summary.completionRate.toFixed(1)}%`} color="green" />
-                <SummaryCard icon={SkipForward} label="スキップ率" value={`${data.summary.skipRate.toFixed(1)}%`} color="yellow" />
-                <SummaryCard icon={Users} label="リーチ数" value={data.summary.uniqueReach.toLocaleString()} color="blue" />
-                <SummaryCard icon={TrendingUp} label="フリークエンシー" value={data.summary.avgFrequency.toFixed(1)} color="purple" />
+                <SummaryCard
+                    icon={BarChart3} label="インプレッション" value={data.summary.totalImpressions.toLocaleString()} color="indigo"
+                    onMouseEnter={(e) => handleMetricHover(e, "インプレッション", data.summary.totalImpressions.toLocaleString(), "impressions")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={MousePointer2} label="クリック数" value={data.summary.totalClicks.toLocaleString()} color="pink"
+                    onMouseEnter={(e) => handleMetricHover(e, "クリック数", data.summary.totalClicks.toLocaleString(), "clicks")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={Percent} label="CTR" value={`${data.summary.avgCtr.toFixed(2)}%`} color="emerald"
+                    onMouseEnter={(e) => handleMetricHover(e, "CTR", `${data.summary.avgCtr.toFixed(2)}%`, "ctr")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={CheckCircle2} label="視聴完了率" value={`${data.summary.completionRate.toFixed(1)}%`} color="green"
+                    onMouseEnter={(e) => handleMetricHover(e, "視聴完了率", `${data.summary.completionRate.toFixed(1)}%`, "completionRate")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={SkipForward} label="スキップ率" value={`${data.summary.skipRate.toFixed(1)}%`} color="yellow"
+                    onMouseEnter={(e) => handleMetricHover(e, "スキップ率", `${data.summary.skipRate.toFixed(1)}%`, "skipRate")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={Users} label="リーチ数" value={data.summary.uniqueReach.toLocaleString()} color="blue"
+                    onMouseEnter={(e) => handleMetricHover(e, "リーチ数", data.summary.uniqueReach.toLocaleString(), "uniqueReach")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
+                <SummaryCard
+                    icon={TrendingUp} label="フリークエンシー" value={data.summary.avgFrequency.toFixed(1)} color="purple"
+                    onMouseEnter={(e) => handleMetricHover(e, "フリークエンシー", data.summary.avgFrequency.toFixed(1), "avgFrequency")}
+                    onMouseLeave={() => setHoveredData(null)}
+                />
             </div>
 
             {/* Charts Row */}
@@ -648,14 +676,37 @@ function DeviceBar({ label, icon: Icon, count, total, color, onMouseEnter, onMou
             <Icon className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-600 group-hover:font-bold transition-all">{label}</span>
-                    <span className="font-mono text-slate-400">{count}</span>
+                    <span className="font-medium text-slate-600 dark:text-slate-300">{label}</span>
+                    <span className="font-mono text-slate-500">{count.toLocaleString()}</span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${percent}%` }} />
+                <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className={`h-full ${color} rounded-full transition-all duration-300`} style={{ width: `${percent}%` }} />
                 </div>
             </div>
         </div>
+    )
+}
+
+function ProgressBar({ value, label }: { value: number | undefined, label: string }) {
+    return (
+        <div className="flex-1 flex flex-col items-center">
+            <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                    className="h-full bg-indigo-500 rounded-full"
+                    style={{ width: `${value || 0}%` }}
+                />
+            </div>
+            <span className="text-[9px] text-slate-400 mt-0.5">{label}</span>
+        </div>
+    )
+}                    <span className="text-slate-600 group-hover:font-bold transition-all">{label}</span>
+                    <span className="font-mono text-slate-400">{count}</span>
+                </div >
+    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${percent}%` }} />
+    </div>
+            </div >
+        </div >
     )
 }
 
