@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/app/components/ui/button'
-import { ArrowLeft, BarChart3, MousePointer2, Percent, SortAsc, SortDesc, Heart, Play, FastForward, Monitor, Smartphone, Tablet, Clock, Calendar, TrendingUp, Users, SkipForward, CheckCircle2, Filter, RefreshCw, Download, Building2 } from 'lucide-react'
+import { ArrowLeft, BarChart3, MousePointer2, Percent, SortAsc, SortDesc, Heart, Play, FastForward, Monitor, Smartphone, Tablet, Clock, Calendar, TrendingUp, Users, SkipForward, CheckCircle2, Filter, RefreshCw, Download, Building2, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
 
 interface AdMetrics {
@@ -64,7 +64,23 @@ export default function SponsorAnalyticsPage() {
     const [sortField, setSortField] = useState<string>('impressions')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
-    const [hoveredData, setHoveredData] = useState<{ x: number, y: number, label: string, value: string, subValue?: string } | null>(null)
+    const [hoveredData, setHoveredData] = useState<{ x: number, y: number, label: string, value?: string, subValue?: string, description?: string } | null>(null)
+
+    const metricDefinitions: Record<string, string> = {
+        impressions: "広告が表示された回数",
+        clicks: "広告がクリックされた回数",
+        ctr: "表示回数のうちクリックされた割合 (クリック ÷ 表示回数)",
+        completionRate: "広告がスキップされずに最後まで再生された割合",
+        skipRate: "広告がスキップされた割合",
+        uniqueReach: "広告を視聴したユニークユーザー数（ブラウザ単位の推定値）",
+        avgFrequency: "1ユーザーあたりの平均広告視聴回数",
+        tableImpressions: "表示回数",
+        tableClicks: "クリック数",
+        tableCtr: "クリック率",
+        tableCompletion: "完全視聴率",
+        tableSkip: "スキップ率",
+        tableReach: "到達率（視聴進捗ごとの割合）"
+    }
 
     const fetchData = async () => {
         setLoading(true)
@@ -391,20 +407,50 @@ export default function SponsorAnalyticsPage() {
                             <tr>
                                 <th className="px-4 py-3 font-medium">広告</th>
                                 <th className="px-4 py-3 font-medium">タイプ</th>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:bg-slate-100" onClick={() => handleSort('impressions')}>
-                                    表示 <SortIcon field="impressions" />
+                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                    onClick={() => handleSort('impressions')}
+                                    onMouseEnter={(e) => handleMetricHover(e, "表示回数", "", "tableImpressions")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        表示 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="impressions" />
+                                    </div>
                                 </th>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:bg-slate-100" onClick={() => handleSort('clicks')}>
-                                    クリック <SortIcon field="clicks" />
+                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                    onClick={() => handleSort('clicks')}
+                                    onMouseEnter={(e) => handleMetricHover(e, "クリック数", "", "tableClicks")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        クリック <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="clicks" />
+                                    </div>
                                 </th>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:bg-slate-100" onClick={() => handleSort('ctr')}>
-                                    CTR <SortIcon field="ctr" />
+                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                    onClick={() => handleSort('ctr')}
+                                    onMouseEnter={(e) => handleMetricHover(e, "CTR", "", "tableCtr")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        CTR <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="ctr" />
+                                    </div>
                                 </th>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:bg-slate-100" onClick={() => handleSort('completionRate')}>
-                                    完了率 <SortIcon field="completionRate" />
+                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                    onClick={() => handleSort('completionRate')}
+                                    onMouseEnter={(e) => handleMetricHover(e, "完了率", "", "tableCompletion")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        完了率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="completionRate" />
+                                    </div>
                                 </th>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:bg-slate-100" onClick={() => handleSort('skipRate')}>
-                                    スキップ率 <SortIcon field="skipRate" />
+                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                    onClick={() => handleSort('skipRate')}
+                                    onMouseEnter={(e) => handleMetricHover(e, "スキップ率", "", "tableSkip")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        スキップ率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="skipRate" />
+                                    </div>
                                 </th>
                                 <th className="px-4 py-3 font-medium">到達率</th>
                                 <th className="px-4 py-3 font-medium text-center">状態</th>
@@ -463,23 +509,35 @@ export default function SponsorAnalyticsPage() {
             {/* Custom Tooltip */}
             {hoveredData && (
                 <div
-                    className="fixed z-50 bg-slate-900/90 text-white text-xs rounded px-3 py-2 pointer-events-none shadow-xl backdrop-blur-sm transform -translate-x-1/2 -translate-y-full mt-[-8px] transition-all duration-75"
+                    className="fixed z-50 bg-slate-900/95 text-white text-xs rounded-lg px-4 py-3 pointer-events-none shadow-2xl backdrop-blur-md transform -translate-x-1/2 -translate-y-full mt-[-8px] transition-all duration-75 max-w-[240px] border border-slate-700"
                     style={{ left: hoveredData.x, top: hoveredData.y }}
                 >
-                    <div className="font-bold mb-0.5 text-center">{hoveredData.label}</div>
+                    <div className="font-bold mb-1 text-center border-b border-slate-700 pb-1 text-slate-200">{hoveredData.label}</div>
                     <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold">{hoveredData.value}</span>
-                        {hoveredData.subValue && <span className="text-slate-300 text-[10px]">{hoveredData.subValue}</span>}
+                        {hoveredData.value && <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">{hoveredData.value}</span>}
+                        {hoveredData.subValue && <span className="text-slate-400 text-[10px] mt-1">{hoveredData.subValue}</span>}
                     </div>
+                    {hoveredData.description && (
+                        <div className="mt-2 pt-2 border-t border-slate-700 text-slate-300 text-center leading-relaxed font-medium">
+                            {hoveredData.description}
+                        </div>
+                    )}
                     {/* Tiny Triangle Pointer */}
-                    <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-slate-900/90" />
+                    <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-700" />
                 </div>
             )}
         </div>
     )
 }
 
-function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) {
+function SummaryCard({ icon: Icon, label, value, color, onMouseEnter, onMouseLeave }: {
+    icon: any,
+    label: string,
+    value: string,
+    color: string,
+    onMouseEnter?: (e: any) => void,
+    onMouseLeave?: () => void
+}) {
     const colorClasses: Record<string, string> = {
         indigo: 'text-indigo-600 bg-indigo-50',
         pink: 'text-pink-600 bg-pink-50',
@@ -490,11 +548,18 @@ function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: st
         purple: 'text-purple-600 bg-purple-50'
     }
     return (
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div
+            className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-help"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
             <div className={`${colorClasses[color]} w-8 h-8 rounded-lg flex items-center justify-center mb-2`}>
                 <Icon className="h-4 w-4" />
             </div>
-            <p className="text-xs text-slate-500 mb-0.5">{label}</p>
+            <div className="flex items-center gap-1 mb-0.5">
+                <p className="text-xs text-slate-500">{label}</p>
+                <HelpCircle className="h-3 w-3 text-slate-300" />
+            </div>
             <p className="text-lg font-bold text-slate-800 dark:text-white">{value}</p>
         </div>
     )
