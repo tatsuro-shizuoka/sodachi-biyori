@@ -55,6 +55,10 @@ export async function GET(request: Request) {
             }
         }) as any[]
 
+        // School Map for lookup
+        const allSchools = await prisma.school.findMany({ select: { id: true, name: true } })
+        const schoolMap = new Map(allSchools.map(s => [s.id, s.name]))
+
         // Calculate metrics for each ad type
         const calculateAdMetrics = (adId: string, type: string) => {
             const adImpressions = impressions.filter(i =>
@@ -184,10 +188,6 @@ export async function GET(request: Request) {
         }))
 
         // School Breakdown
-        // Fetch all schools to map IDs to Names
-        const allSchools = await prisma.school.findMany({ select: { id: true, name: true } })
-        const schoolMap = new Map(allSchools.map(s => [s.id, s.name]))
-
         const schoolStats = new Map<string, { impressions: number, clicks: number, completed: number }>()
 
         impressions.forEach(imp => {
