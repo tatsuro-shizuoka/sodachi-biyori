@@ -329,23 +329,20 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         lastPlaybackTimeRef.current = newTime
     }
 
-    // Detect percentage points (25%, 50%, 75%)
+    // Detect percentage points (dynamic from ad settings)
     const handlePercentageDetection = (currentTime: number, duration: number) => {
         if (!duration || isMidrollActive) return
 
         const progress = (currentTime / duration) * 100
-        const percentagePoints = [25, 50, 75]
 
-        for (const point of percentagePoints) {
-            if (progress >= point && !triggeredPercentagePointsRef.current.has(point)) {
-                // API already filters active ads, triggerValue can be number or string
-                const percentageAd = midrollAds.find(
-                    ad => ad.triggerType === 'percentage' &&
-                        Number(ad.triggerValue) === point
-                )
-                if (percentageAd) {
+        // Check each available midroll ad
+        for (const ad of midrollAds) {
+            if (ad.triggerType === 'percentage' && ad.triggerValue) {
+                const point = Number(ad.triggerValue)
+                // If progress passed the point AND we haven't triggered this point yet
+                if (progress >= point && !triggeredPercentagePointsRef.current.has(point)) {
                     triggeredPercentagePointsRef.current.add(point)
-                    triggerMidrollAd(percentageAd, currentTime)
+                    triggerMidrollAd(ad, currentTime)
                     break // Only trigger one ad at a time
                 }
             }
