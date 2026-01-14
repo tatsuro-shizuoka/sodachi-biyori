@@ -687,28 +687,7 @@ function DeviceBar({ label, icon: Icon, count, total, color, onMouseEnter, onMou
     )
 }
 
-function ProgressBar({ value, label }: { value: number | undefined, label: string }) {
-    return (
-        <div className="flex-1 flex flex-col items-center">
-            <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                <div
-                    className="h-full bg-indigo-500 rounded-full"
-                    style={{ width: `${value || 0}%` }}
-                />
-            </div>
-            <span className="text-[9px] text-slate-400 mt-0.5">{label}</span>
-        </div>
-    )
-}                    <span className="text-slate-600 group-hover:font-bold transition-all">{label}</span>
-                    <span className="font-mono text-slate-400">{count}</span>
-                </div >
-    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${percent}%` }} />
-    </div>
-            </div >
-        </div >
-    )
-}
+
 
 function ProgressBar({ value, label }: { value?: number, label: string }) {
     if (value === undefined) return <div className="w-8 h-4 bg-slate-100 rounded text-[8px] text-slate-400 flex items-center justify-center">-</div>
