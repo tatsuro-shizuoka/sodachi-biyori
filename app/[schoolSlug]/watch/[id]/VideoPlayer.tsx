@@ -220,6 +220,17 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     const currentImpressionIdRef = useRef<string | null>(null)
     const trackedMilestonesRef = useRef<Set<number>>(new Set())
 
+    const detectDeviceType = () => {
+        if (typeof window === 'undefined') return 'unknown'
+        const ua = navigator.userAgent.toLowerCase()
+        if (ua.includes('tablet') || ua.includes('ipad') || (ua.includes('android') && !ua.includes('mobile'))) {
+            return 'tablet'
+        } else if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+            return 'mobile'
+        }
+        return 'desktop'
+    }
+
     const createImpression = async (type: 'preroll' | 'midroll', adId: string) => {
         try {
             const res = await fetch('/api/ads/impression', {
@@ -230,7 +241,9 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                     [type === 'preroll' ? 'prerollAdId' : 'midrollAdId']: adId,
                     schoolId: null,
                     schoolSlug: schoolSlug, // Pass slug for resolution
-                    videoId: videoId
+                    videoId: videoId,
+                    deviceType: detectDeviceType(),
+                    userAgent: navigator.userAgent
                 })
             })
             if (res.ok) {
