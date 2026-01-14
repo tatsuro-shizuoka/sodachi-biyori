@@ -24,7 +24,8 @@ export async function POST(request: Request) {
         const userAgent = body.userAgent || request.headers.get('user-agent') || 'unknown'
         let deviceType = body.deviceType
 
-        if (!deviceType && userAgent !== 'unknown') {
+        // Retrying detection if deviceType is not provided or explicitly 'unknown'
+        if ((!deviceType || deviceType === 'unknown') && userAgent !== 'unknown') {
             const ua = userAgent.toLowerCase()
             if (ua.includes('tablet') || ua.includes('ipad') || (ua.includes('android') && !ua.includes('mobile'))) {
                 deviceType = 'tablet'
