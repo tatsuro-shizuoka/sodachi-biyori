@@ -67,7 +67,8 @@ export async function GET(request: Request) {
             if (total === 0) return {
                 impressions: 0, clicks: 0, ctr: 0, completionRate: 0, skipRate: 0,
                 avgWatchTime: 0, avgSkipTime: 0, reached25: 0, reached50: 0, reached75: 0, reached100: 0,
-                uniqueUsers: 0, frequency: 0
+                uniqueUsers: 0, frequency: 0,
+                schoolBreakdown: []
             }
 
             const clicked = adImpressions.filter(i => i.clicked).length
@@ -83,6 +84,29 @@ export async function GET(request: Request) {
 
             const uniqueSessions = new Set(adImpressions.map(i => i.sessionId)).size
 
+            // Calculate per-school breakdown for this ad
+            const adSchoolStats = new Map<string, { impressions: number, clicks: number, completed: number }>()
+            adImpressions.forEach(imp => {
+                const sId = imp.schoolId || 'unknown'
+                const current = adSchoolStats.get(sId) || { impressions: 0, clicks: 0, completed: 0 }
+                adSchoolStats.set(sId, {
+                    impressions: current.impressions + 1,
+                    clicks: current.clicks + (imp.clicked ? 1 : 0),
+                    completed: current.completed + (imp.watchedFull ? 1 : 0)
+                })
+            })
+
+            const adSchoolBreakdown = Array.from(adSchoolStats.entries()).map(([sId, stats]) => {
+                const sTotal = stats.impressions
+                return {
+                    schoolName: sId === 'unknown' ? '不明' : schoolMap.get(sId) || '削除された園',
+                    impressions: sTotal,
+                    clicks: stats.clicks,
+                    ctr: sTotal > 0 ? (stats.clicks / sTotal) * 100 : 0,
+                    completionRate: sTotal > 0 ? (stats.completed / sTotal) * 100 : 0
+                }
+            }).sort((a, b) => b.impressions - a.impressions)
+
             return {
                 impressions: total,
                 clicks: clicked,
@@ -96,7 +120,8 @@ export async function GET(request: Request) {
                 reached75: total > 0 ? (r75 / total) * 100 : 0,
                 reached100: total > 0 ? (r100 / total) * 100 : 0,
                 uniqueUsers: uniqueSessions,
-                frequency: uniqueSessions > 0 ? total / uniqueSessions : 0
+                frequency: uniqueSessions > 0 ? total / uniqueSessions : 0,
+                schoolBreakdown: adSchoolBreakdown
             }
         }
 

@@ -25,6 +25,7 @@ interface AdMetrics {
     frequency?: number
     triggerType?: string
     triggerValue?: number
+    schoolBreakdown?: SchoolMetrics[]
 }
 
 interface SchoolMetrics {
@@ -65,6 +66,28 @@ export default function SponsorAnalyticsPage() {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
     const [hoveredData, setHoveredData] = useState<{ x: number, y: number, label: string, value?: string, subValue?: string, description?: string } | null>(null)
+    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+    const toggleExpand = (id: string) => {
+        const newSet = new Set(expandedRows)
+        if (newSet.has(id)) {
+            newSet.delete(id)
+        } else {
+            newSet.add(id)
+        }
+        setExpandedRows(newSet)
+    }
+
+    const handleMetricHover = (e: React.MouseEvent, label: string, value: string | number, metricKey: string) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        setHoveredData({
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10,
+            label,
+            value: value.toString(),
+            description: metricDefinitions[metricKey]
+        })
+    }
 
     const metricDefinitions: Record<string, string> = {
         impressions: "広告が表示された回数",
@@ -458,41 +481,82 @@ export default function SponsorAnalyticsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {sortedAds.map(ad => (
-                                <tr key={ad.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3">
-                                        <div className="font-medium text-slate-800 dark:text-white">{ad.name}</div>
-                                        <div className="text-xs text-slate-500">{ad.schoolName}</div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                                            {ad.type === 'preroll' ? 'プリロール' : 'ミッドロール'}
-                                        </span>
-                                        {ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
-                                        {ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
-                                    </td>
-                                    <td className="px-4 py-3 font-mono">{ad.impressions.toLocaleString()}</td>
-                                    <td className="px-4 py-3 font-mono">{ad.clicks.toLocaleString()}</td>
-                                    <td className="px-4 py-3 font-mono">
-                                        <span className={ad.ctr > 2 ? 'text-emerald-600 font-bold' : ''}>{ad.ctr.toFixed(2)}%</span>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono">
-                                        <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
-                                            {ad.completionRate?.toFixed(1) ?? '-'}%
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex gap-1">
-                                            <ProgressBar value={ad.reached25} label="25" />
-                                            <ProgressBar value={ad.reached50} label="50" />
-                                            <ProgressBar value={ad.reached75} label="75" />
-                                            <ProgressBar value={ad.reached100} label="100" />
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                        <span className={`inline-block w-2.5 h-2.5 rounded-full ${ad.isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
-                                    </td>
-                                </tr>
+                                <>
+                                    <tr
+                                        key={ad.id}
+                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                                        onClick={() => toggleExpand(ad.id)}
+                                    >
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium text-slate-800 dark:text-white flex items-center gap-2">
+                                                <span className={`transition-transform text-[10px] text-slate-400 ${expandedRows.has(ad.id) ? 'rotate-90' : ''}`}>▶</span>
+                                                {ad.name}
+                                            </div>
+                                            <div className="text-xs text-slate-500 pl-5">{ad.schoolName}</div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                {ad.type === 'preroll' ? 'プリロール' : 'ミッドロール'}
+                                            </span>
+                                            {ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
+                                            {ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
+                                        </td>
+                                        <td className="px-4 py-3 font-mono">{ad.impressions.toLocaleString()}</td>
+                                        <td className="px-4 py-3 font-mono">{ad.clicks.toLocaleString()}</td>
+                                        <td className="px-4 py-3 font-mono">
+                                            <span className={ad.ctr > 2 ? 'text-emerald-600 font-bold' : ''}>{ad.ctr.toFixed(2)}%</span>
+                                        </td>
+                                        <td className="px-4 py-3 font-mono">
+                                            <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
+                                                {ad.completionRate?.toFixed(1) ?? '-'}%
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex gap-1">
+                                                <ProgressBar value={ad.reached25} label="25" />
+                                                <ProgressBar value={ad.reached50} label="50" />
+                                                <ProgressBar value={ad.reached75} label="75" />
+                                                <ProgressBar value={ad.reached100} label="100" />
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`inline-block w-2.5 h-2.5 rounded-full ${ad.isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
+                                        </td>
+                                    </tr>
+                                    {expandedRows.has(ad.id) && ad.schoolBreakdown && (
+                                        <tr className="bg-slate-50 dark:bg-slate-900/40 border-b border-dashed border-slate-200">
+                                            <td colSpan={9} className="p-4 pl-12">
+                                                <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+                                                    <h4 className="font-bold text-xs text-slate-500 mb-3 flex items-center gap-2">
+                                                        <Building2 className="h-3 w-3" /> 園別パフォーマンス内訳
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        {ad.schoolBreakdown.slice(0, 6).map((s, idx) => {
+                                                            const max = Math.max(...(ad.schoolBreakdown?.map(x => x.impressions) || [1]), 1)
+                                                            return (
+                                                                <div key={idx} className="space-y-1">
+                                                                    <div className="flex justify-between text-xs">
+                                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{s.schoolName}</span>
+                                                                        <span className="text-slate-500">{s.impressions} imp</span>
+                                                                    </div>
+                                                                    <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(s.impressions / max) * 100}%` }} />
+                                                                    </div>
+                                                                    <div className="flex justify-end gap-3 text-[10px] text-slate-400 font-mono">
+                                                                        <span>Click: {s.clicks}</span>
+                                                                        <span>CTR: {s.ctr.toFixed(1)}%</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                        {!ad.schoolBreakdown.length && <div className="text-slate-400 text-xs">データがありません</div>}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </>
                             ))}
                             {sortedAds.length === 0 && (
                                 <tr>
