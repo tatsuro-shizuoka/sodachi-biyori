@@ -370,9 +370,11 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
     }
 
     // Handle midroll end
-    const handleMidrollEnd = () => {
-        // Track completion
-        updateImpression({ watchedFull: true, reached100: true })
+    const handleMidrollEnd = (isSkipped = false) => {
+        // Track completion only if not skipped
+        if (isSkipped !== true) {
+            updateImpression({ watchedFull: true, reached100: true })
+        }
 
         setIsMidrollActive(false)
         setActiveMidrollAd(null)
@@ -423,9 +425,11 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
         checkPreroll()
     }, [schoolSlug])
 
-    const handlePrerollEnd = () => {
-        // Track completion
-        updateImpression({ watchedFull: true, reached100: true })
+    const handlePrerollEnd = (isSkipped = false) => {
+        // Track completion only if not skipped
+        if (isSkipped !== true) {
+            updateImpression({ watchedFull: true, reached100: true })
+        }
 
         setIsPrerollActive(false)
         setPrerollFinished(true)
@@ -479,12 +483,12 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
             }
 
             player.on('timeupdate', onTimeUpdate)
-            player.on('ended', handlePrerollEnd)
+            player.on('ended', () => handlePrerollEnd())
             player.play().catch(e => console.error('Vimeo Autoplay failed', e))
 
             return () => {
                 player.off('timeupdate', onTimeUpdate)
-                player.off('ended', handlePrerollEnd)
+                player.off('ended', () => handlePrerollEnd())
             }
         }
     }, [isPrerollActive, prerollVimeoId])
@@ -595,12 +599,12 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
             // Basic skip tracking
             updateImpression({ skipped: true })
         }
-        handlePrerollEnd()
+        handlePrerollEnd(true)
     }
 
     const handleSkipMidroll = () => {
         updateImpression({ skipped: true })
-        handleMidrollEnd()
+        handleMidrollEnd(true)
     }
 
     const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
@@ -628,7 +632,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                                 muted={adMuted}
                                 playsInline
                                 className="w-full h-full object-contain bg-black"
-                                onEnded={handlePrerollEnd}
+                                onEnded={() => handlePrerollEnd()}
                                 onTimeUpdate={handleAdTimeUpdate}
                                 onLoadedMetadata={(e) => {
                                     // Set initial duration
@@ -698,7 +702,7 @@ export function VideoPlayer({ videoUrl, title, thumbnailUrl, videoId, analysisSt
                             muted={adMuted}
                             playsInline
                             className="w-full h-full object-contain bg-black"
-                            onEnded={handleMidrollEnd}
+                            onEnded={() => handleMidrollEnd()}
                             onTimeUpdate={handleMidrollTimeUpdate}
                             onLoadedMetadata={(e) => {
                                 const video = e.currentTarget
