@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
     if (!schoolSlugMatch) return NextResponse.next()
 
     const slug = schoolSlugMatch[1]
-    const systemPaths = ['api', '_next', 'admin', 'favicon.ico', 'signup', 'login', 'uploads', 'lp', 'models', 'icons', 'images']
+    const systemPaths = ['api', '_next', 'admin', 'favicon.ico', 'signup', 'login', 'uploads', 'lp', 'models', 'icons', 'images', 'sales']
     if (systemPaths.includes(slug)) return NextResponse.next()
 
     // Assuming any other path starting with a segment is a school page
