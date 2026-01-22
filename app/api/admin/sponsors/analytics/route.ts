@@ -211,12 +211,46 @@ export async function GET(request: Request) {
             }
         }).sort((a, b) => b.impressions - a.impressions)
 
-        // Overall summary
+        // ... (previous aggregations)
+
+        // Overall summary (Restored Logic)
         const allAds = [...prerollData, ...midrollData]
         const totalImpressions = allAds.reduce((acc, ad) => acc + ad.impressions, 0) + sponsorData.reduce((acc, s) => acc + s.impressions, 0)
         const totalClicks = allAds.reduce((acc, ad) => acc + ad.clicks, 0) + sponsorData.reduce((acc, s) => acc + s.clicks, 0)
         const totalCompleted = impressions.filter(i => i.watchedFull).length
         const totalSkipped = impressions.filter(i => i.skipped).length
+
+        // --- Generic Analytics Events ---
+        const eventWhere: any = {}
+        if (dateFilter) eventWhere.createdAt = { gte: dateFilter }
+
+        const analyticsEvents = await prisma.analyticsEvent.findMany({
+            where: eventWhere,
+            include: {
+                school: { select: { name: true } }
+            }
+        })
+
+        // Group by Type
+        const eventTypeMap = new Map<string, number>()
+        analyticsEvents.forEach(e => {
+            const count = eventTypeMap.get(e.type) || 0
+            eventTypeMap.set(e.type, count + 1)
+        })
+
+        const eventMetrics = Array.from(eventTypeMap.entries()).map(([type, count]) => ({
+            type,
+            count,
+            label: getEventLabel(type) // Helper function or simple mapping
+        })).sort((a, b) => b.count - a.count)
+
+        // Group Gallery Views by School (as generic example)
+        const galleryViews = analyticsEvents.filter(e => e.type === 'gallery_view')
+        const galleryBySchool = new Map<string, number>()
+        galleryViews.forEach(e => {
+            const name = e.school?.name || 'Unknown'
+            galleryBySchool.set(name, (galleryBySchool.get(name) || 0) + 1)
+        })
 
         return NextResponse.json({
             summary: {
@@ -235,6 +269,8 @@ export async function GET(request: Request) {
             hourBreakdown,
             dayBreakdown,
             schoolBreakdown,
+            eventMetrics, // [NEW]
+            galleryBySchool: Array.from(galleryBySchool.entries()).map(([name, count]) => ({ name, count })),
             dateRange,
             adType
         })
@@ -242,5 +278,16 @@ export async function GET(request: Request) {
     } catch (e: any) {
         console.error('Analytics API Error:', e.message, e)
         return NextResponse.json({ error: 'Internal Server Error', details: e.message }, { status: 500 })
+    }
+}
+
+function getEventLabel(type: string) {
+    switch (type) {
+        case 'gallery_view': return 'ギャラリー閲覧'
+        case 'popup_click': return 'ポップアップクリック'
+        case 'popup_view': return 'ポップアップ表示'
+        case 'banner_view': return 'バナー表示'
+        case 'page_view': return 'ページ閲覧'
+        default: return type
     }
 }

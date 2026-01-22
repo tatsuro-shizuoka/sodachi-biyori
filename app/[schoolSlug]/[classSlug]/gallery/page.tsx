@@ -36,6 +36,17 @@ export default function ClassGalleryPage() {
 
     useEffect(() => {
         fetchVideos()
+
+        // Track Gallery View
+        fetch('/api/analytics/track', {
+            method: 'POST',
+            body: JSON.stringify({
+                type: 'gallery_view',
+                schoolSlug,
+                classSlug,
+                metadata: { from: 'web_gallery' }
+            })
+        }).catch(err => console.error('Tracking failed', err))
     }, [classSlug])
 
     const fetchVideos = async () => {

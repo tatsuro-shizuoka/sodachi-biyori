@@ -13,6 +13,7 @@ interface UserInfo {
     guardianName: string
     email: string
     className: string | null
+    classSlug?: string | null
     schoolName: string | null
     childName: string | null
 }
@@ -88,7 +89,7 @@ export default function SchoolLayout({
 
                 <nav className="p-4 space-y-1">
                     <Link
-                        href={`/${schoolSlug}/gallery`}
+                        href={userInfo?.classSlug ? `/${schoolSlug}/${userInfo.classSlug}/gallery` : `/${schoolSlug}/gallery`}
                         className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg group transition-colors"
                     >
                         <LayoutDashboard className="h-5 w-5 mr-3 text-slate-400 group-hover:text-primary transition-colors" />

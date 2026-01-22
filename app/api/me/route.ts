@@ -48,6 +48,7 @@ export async function GET() {
             email: guardian.email,
             childName: firstChild?.name || null,
             className: firstClass?.name || null,
+            classSlug: firstClass?.slug || null,
             schoolName: firstClass?.school?.name || null,
             // Include children array for face registration
             children: guardian.children.map(gc => ({

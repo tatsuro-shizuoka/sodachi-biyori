@@ -34,6 +34,7 @@ model School {
   enableStampCard Boolean @default(true)
   enableAiAnalysis Boolean @default(false)
   popDisplayMode  String  @default("priority") // "priority", "random", "sequential"
+  analyticsEvents AnalyticsEvent[]
 }
 
 model Class {
@@ -54,6 +55,7 @@ model Class {
   videos           Video[]
 
   @@unique([schoolId, slug])
+  analyticsEvents AnalyticsEvent[]
 }
 
 model Video {
@@ -217,6 +219,7 @@ model Guardian {
   videoViews    VideoView[]
   reactionLogs  ReactionLog[]
   stampCards    StampCard[]
+  analyticsEvents AnalyticsEvent[]
 }
 
 model Child {
@@ -422,4 +425,25 @@ model AdImpression {
   @@index([createdAt])
   @@index([hourOfDay])
   @@index([dayOfWeek])
+}
+
+// 汎用分析イベント（ギャラリー閲覧、ポップアップクリックなど）
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  type       String   // "gallery_view", "popup_click", "banner_view", etc.
+  schoolId   String?
+  classId    String?
+  guardianId String?
+  metadata   Json?    // 任意のパラメーター（例: { popupId: "..." }）
+  createdAt  DateTime @default(now())
+
+  school     School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  class      Class?   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  guardian   Guardian? @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([schoolId])
+  @@index([classId])
+  @@index([guardianId])
+  @@index([createdAt])
 }

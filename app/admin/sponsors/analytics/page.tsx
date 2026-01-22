@@ -55,6 +55,8 @@ interface AnalyticsData {
     schoolBreakdown: SchoolMetrics[]
     dateRange: string
     adType: string
+    eventMetrics?: { type: string, count: number, label: string }[]
+    galleryBySchool?: { name: string, count: number }[]
 }
 
 export default function SponsorAnalyticsPage() {
@@ -62,6 +64,7 @@ export default function SponsorAnalyticsPage() {
     const [loading, setLoading] = useState(true)
     const [dateRange, setDateRange] = useState('all')
     const [adType, setAdType] = useState('all')
+    const [analyticsTab, setAnalyticsTab] = useState<'video' | 'events'>('video')
     const [sortField, setSortField] = useState<string>('impressions')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
@@ -259,363 +262,439 @@ export default function SponsorAnalyticsPage() {
                 </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                <SummaryCard
-                    icon={BarChart3} label="インプレッション" value={data.summary.totalImpressions.toLocaleString()} color="indigo"
-                    onMouseEnter={(e) => handleMetricHover(e, "インプレッション", data.summary.totalImpressions.toLocaleString(), "impressions")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={MousePointer2} label="クリック数" value={data.summary.totalClicks.toLocaleString()} color="pink"
-                    onMouseEnter={(e) => handleMetricHover(e, "クリック数", data.summary.totalClicks.toLocaleString(), "clicks")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={Percent} label="CTR" value={`${data.summary.avgCtr.toFixed(2)}%`} color="emerald"
-                    onMouseEnter={(e) => handleMetricHover(e, "CTR", `${data.summary.avgCtr.toFixed(2)}%`, "ctr")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={CheckCircle2} label="視聴完了率" value={`${data.summary.completionRate.toFixed(1)}%`} color="green"
-                    onMouseEnter={(e) => handleMetricHover(e, "視聴完了率", `${data.summary.completionRate.toFixed(1)}%`, "completionRate")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={SkipForward} label="スキップ率" value={`${data.summary.skipRate.toFixed(1)}%`} color="yellow"
-                    onMouseEnter={(e) => handleMetricHover(e, "スキップ率", `${data.summary.skipRate.toFixed(1)}%`, "skipRate")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={Users} label="リーチ数" value={data.summary.uniqueReach.toLocaleString()} color="blue"
-                    onMouseEnter={(e) => handleMetricHover(e, "リーチ数", data.summary.uniqueReach.toLocaleString(), "uniqueReach")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
-                <SummaryCard
-                    icon={TrendingUp} label="フリークエンシー" value={data.summary.avgFrequency.toFixed(1)} color="purple"
-                    onMouseEnter={(e) => handleMetricHover(e, "フリークエンシー", data.summary.avgFrequency.toFixed(1), "avgFrequency")}
-                    onMouseLeave={() => setHoveredData(null)}
-                />
+            {/* Tabs */}
+            <div className="flex gap-4 border-b border-slate-200 dark:border-slate-700">
+                <button
+                    onClick={() => setAnalyticsTab('video')}
+                    className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors ${analyticsTab === 'video' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    動画・広告分析
+                </button>
+                <button
+                    onClick={() => setAnalyticsTab('events')}
+                    className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors ${analyticsTab === 'events' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    イベント分析（ギャラリー等）
+                </button>
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Hour of Day */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Clock className="h-4 w-4" /> 時間帯別視聴数</h3>
-                    <div className="flex items-end h-32 gap-0.5">
-                        {data.hourBreakdown.map((h, i) => (
-                            <div
-                                key={i}
-                                className="flex-1 bg-indigo-500 rounded-t hover:bg-indigo-400 transition-colors cursor-pointer group relative"
-                                style={{ height: `${(h.count / maxHourCount) * 100}%`, minHeight: h.count > 0 ? '4px' : '0' }}
-                                onMouseEnter={(e) => {
-                                    const rect = e.currentTarget.getBoundingClientRect()
-                                    setHoveredData({
-                                        x: rect.left + rect.width / 2,
-                                        y: rect.top - 10,
-                                        label: `${h.hour}時台`,
-                                        value: `${h.count}回`,
-                                        subValue: '視聴'
-                                    })
-                                }}
-                                onMouseLeave={() => setHoveredData(null)}
-                            />
-                        ))}
-                    </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 mt-2 font-mono">
-                        <span>0:00</span>
-                        <span>6:00</span>
-                        <span>12:00</span>
-                        <span>18:00</span>
-                        <span>23:00</span>
+            {analyticsTab === 'events' ? (
+                /* Event Analytics View */
+                <div className="space-y-6 animate-in fade-in duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Event Types Table */}
+                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                                <h2 className="font-bold text-lg">インタラクション内訳</h2>
+                            </div>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200">
+                                    <tr>
+                                        <th className="px-6 py-3 font-medium text-slate-500">アクション名</th>
+                                        <th className="px-6 py-3 font-medium text-slate-500">回数</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {data?.eventMetrics?.map((event, i) => (
+                                        <tr key={i} className="hover:bg-slate-50">
+                                            <td className="px-6 py-4 font-medium">{event.label} <span className="text-xs text-slate-400 ml-2">({event.type})</span></td>
+                                            <td className="px-6 py-4 font-mono font-bold text-indigo-600">{event.count.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                    {(!data?.eventMetrics || data.eventMetrics.length === 0) && (
+                                        <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-400">データがありません</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Gallery Views by School */}
+                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                            <h2 className="font-bold text-lg mb-4">園別ギャラリー閲覧数</h2>
+                            <div className="space-y-4">
+                                {data?.galleryBySchool?.map((item, i) => {
+                                    const max = Math.max(...(data.galleryBySchool?.map(x => x.count) || [1]), 1)
+                                    return (
+                                        <div key={i}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="font-medium">{item.name}</span>
+                                                <span className="font-mono text-slate-500">{item.count} views</span>
+                                            </div>
+                                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="h-full bg-emerald-500" style={{ width: `${(item.count / max) * 100}%` }} />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                                {(!data?.galleryBySchool || data.galleryBySchool.length === 0) && (
+                                    <div className="text-center text-slate-400 py-8">データがありません</div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
+            ) : (
+                /* Original Video Analytics View */
+                <div className="space-y-6 animate-in fade-in duration-300">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                        <SummaryCard
+                            icon={BarChart3} label="インプレッション" value={data?.summary.totalImpressions.toLocaleString() ?? '0'} color="indigo"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "インプレッション", data.summary.totalImpressions.toLocaleString(), "impressions")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={MousePointer2} label="クリック数" value={data?.summary.totalClicks.toLocaleString() ?? '0'} color="pink"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "クリック数", data.summary.totalClicks.toLocaleString(), "clicks")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={Percent} label="CTR" value={`${data?.summary.avgCtr.toFixed(2) ?? '0.00'}%`} color="emerald"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "CTR", `${data.summary.avgCtr.toFixed(2)}%`, "ctr")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={CheckCircle2} label="視聴完了率" value={`${data?.summary.completionRate.toFixed(1) ?? '0.0'}%`} color="green"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "視聴完了率", `${data.summary.completionRate.toFixed(1)}%`, "completionRate")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={SkipForward} label="スキップ率" value={`${data?.summary.skipRate.toFixed(1) ?? '0.0'}%`} color="yellow"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "スキップ率", `${data.summary.skipRate.toFixed(1)}%`, "skipRate")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={Users} label="リーチ数" value={data?.summary.uniqueReach.toLocaleString() ?? '0'} color="blue"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "リーチ数", data.summary.uniqueReach.toLocaleString(), "uniqueReach")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                        <SummaryCard
+                            icon={TrendingUp} label="フリークエンシー" value={data?.summary.avgFrequency.toFixed(1) ?? '0.0'} color="purple"
+                            onMouseEnter={(e) => data && handleMetricHover(e, "フリークエンシー", data.summary.avgFrequency.toFixed(1), "avgFrequency")}
+                            onMouseLeave={() => setHoveredData(null)}
+                        />
+                    </div>
 
-                {/* Day of Week */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Calendar className="h-4 w-4" /> 曜日別視聴数</h3>
-                    <div className="flex items-end h-32 gap-2">
-                        {data.dayBreakdown.map((d, i) => {
-                            const maxDay = Math.max(...data.dayBreakdown.map(x => x.count), 1)
-                            return (
-                                <div key={i} className="flex-1 flex flex-col items-center group">
+                    {/* Charts Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Hour of Day */}
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Clock className="h-4 w-4" /> 時間帯別視聴数</h3>
+                            <div className="flex items-end h-32 gap-0.5">
+                                {data.hourBreakdown.map((h, i) => (
                                     <div
-                                        className="w-full bg-orange-500 rounded-t hover:bg-orange-400 transition-colors cursor-pointer"
-                                        style={{ height: `${(d.count / maxDay) * 100}%`, minHeight: d.count > 0 ? '4px' : '0' }}
+                                        key={i}
+                                        className="flex-1 bg-indigo-500 rounded-t hover:bg-indigo-400 transition-colors cursor-pointer group relative"
+                                        style={{ height: `${(h.count / maxHourCount) * 100}%`, minHeight: h.count > 0 ? '4px' : '0' }}
                                         onMouseEnter={(e) => {
                                             const rect = e.currentTarget.getBoundingClientRect()
                                             setHoveredData({
                                                 x: rect.left + rect.width / 2,
                                                 y: rect.top - 10,
-                                                label: `${d.day}曜日`,
-                                                value: `${d.count}回`,
+                                                label: `${h.hour}時台`,
+                                                value: `${h.count}回`,
                                                 subValue: '視聴'
                                             })
                                         }}
                                         onMouseLeave={() => setHoveredData(null)}
                                     />
-                                    <span className="text-xs font-bold text-slate-500 mt-2">{d.day}</span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-400 mt-2 font-mono">
+                                <span>0:00</span>
+                                <span>6:00</span>
+                                <span>12:00</span>
+                                <span>18:00</span>
+                                <span>23:00</span>
+                            </div>
+                        </div>
 
-            {/* School Breakdown & Device Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* School Breakdown */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Building2 className="h-4 w-4" /> 園別パフォーマンス (上位5園)</h3>
-                    <div className="space-y-4">
-                        {data.schoolBreakdown && data.schoolBreakdown.slice(0, 5).map((school, i) => {
-                            const maxImp = Math.max(...data.schoolBreakdown.map(s => s.impressions), 1)
-                            return (
-                                <div key={i} className="space-y-1">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-slate-700 dark:text-slate-200">{school.schoolName}</span>
-                                        <div className="flex gap-4 text-xs">
-                                            <span className="text-slate-500">{school.impressions.toLocaleString()} imp</span>
-                                            <span className="text-emerald-600 font-bold">CTR {school.ctr.toFixed(1)}%</span>
+                        {/* Day of Week */}
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Calendar className="h-4 w-4" /> 曜日別視聴数</h3>
+                            <div className="flex items-end h-32 gap-2">
+                                {data.dayBreakdown.map((d, i) => {
+                                    const maxDay = Math.max(...data.dayBreakdown.map(x => x.count), 1)
+                                    return (
+                                        <div key={i} className="flex-1 flex flex-col items-center group">
+                                            <div
+                                                className="w-full bg-orange-500 rounded-t hover:bg-orange-400 transition-colors cursor-pointer"
+                                                style={{ height: `${(d.count / maxDay) * 100}%`, minHeight: d.count > 0 ? '4px' : '0' }}
+                                                onMouseEnter={(e) => {
+                                                    const rect = e.currentTarget.getBoundingClientRect()
+                                                    setHoveredData({
+                                                        x: rect.left + rect.width / 2,
+                                                        y: rect.top - 10,
+                                                        label: `${d.day}曜日`,
+                                                        value: `${d.count}回`,
+                                                        subValue: '視聴'
+                                                    })
+                                                }}
+                                                onMouseLeave={() => setHoveredData(null)}
+                                            />
+                                            <span className="text-xs font-bold text-slate-500 mt-2">{d.day}</span>
                                         </div>
-                                    </div>
-                                    <div className="h-2.5 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden flex">
-                                        <div
-                                            className="h-full bg-indigo-500 rounded-full relative group cursor-pointer"
-                                            style={{ width: `${(school.impressions / maxImp) * 100}%` }}
-                                            onMouseEnter={(e) => {
-                                                const rect = e.currentTarget.getBoundingClientRect()
-                                                setHoveredData({
-                                                    x: rect.left + rect.width / 2,
-                                                    y: rect.top - 10,
-                                                    label: school.schoolName,
-                                                    value: `${school.impressions} imp`,
-                                                    subValue: `クリック: ${school.clicks} / CTR: ${school.ctr.toFixed(1)}%`
-                                                })
-                                            }}
-                                            onMouseLeave={() => setHoveredData(null)}
-                                        />
-                                    </div>
-                                </div>
-                            )
-                        })}
-                        {(!data.schoolBreakdown || data.schoolBreakdown.length === 0) && (
-                            <div className="text-center py-8 text-slate-500 text-sm">データがありません</div>
-                        )}
+                                    )
+                                })}
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                {/* Device Breakdown */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Monitor className="h-4 w-4" /> デバイス別</h3>
-                    <div className="space-y-4">
-                        <DeviceBar
-                            label="モバイル" icon={Smartphone} count={data.deviceBreakdown.mobile} total={totalDevices} color="bg-blue-500"
-                            onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect()
-                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'モバイル', value: `${data.deviceBreakdown.mobile}回`, subValue: '視聴' })
-                            }}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                        <DeviceBar
-                            label="タブレット" icon={Tablet} count={data.deviceBreakdown.tablet} total={totalDevices} color="bg-purple-500"
-                            onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect()
-                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'タブレット', value: `${data.deviceBreakdown.tablet}回`, subValue: '視聴' })
-                            }}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                        <DeviceBar
-                            label="デスクトップ" icon={Monitor} count={data.deviceBreakdown.desktop} total={totalDevices} color="bg-emerald-500"
-                            onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect()
-                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'デスクトップ', value: `${data.deviceBreakdown.desktop}回`, subValue: '視聴' })
-                            }}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                        <DeviceBar
-                            label="不明" icon={CheckCircle2} count={data.deviceBreakdown.unknown} total={totalDevices} color="bg-slate-400"
-                            onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect()
-                                setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: '不明', value: `${data.deviceBreakdown.unknown}回`, subValue: '視聴' })
-                            }}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Ads Table */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                    <h2 className="font-bold text-lg">広告別パフォーマンス</h2>
-                    <span className="text-xs text-slate-500">{sortedAds.length}件の広告</span>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 border-b border-slate-200 dark:border-slate-700">
-                            <tr>
-                                <th className="px-4 py-3 font-medium">広告</th>
-                                <th className="px-4 py-3 font-medium">タイプ</th>
-                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                    onClick={() => handleSort('impressions')}
-                                    onMouseEnter={(e) => handleMetricHover(e, "表示回数", "", "tableImpressions")}
-                                    onMouseLeave={() => setHoveredData(null)}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        表示 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="impressions" />
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                    onClick={() => handleSort('clicks')}
-                                    onMouseEnter={(e) => handleMetricHover(e, "クリック数", "", "tableClicks")}
-                                    onMouseLeave={() => setHoveredData(null)}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        クリック <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="clicks" />
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                    onClick={() => handleSort('ctr')}
-                                    onMouseEnter={(e) => handleMetricHover(e, "CTR", "", "tableCtr")}
-                                    onMouseLeave={() => setHoveredData(null)}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        CTR <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="ctr" />
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                    onClick={() => handleSort('completionRate')}
-                                    onMouseEnter={(e) => handleMetricHover(e, "完了率", "", "tableCompletion")}
-                                    onMouseLeave={() => setHoveredData(null)}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        完了率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="completionRate" />
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                    onClick={() => handleSort('skipRate')}
-                                    onMouseEnter={(e) => handleMetricHover(e, "スキップ率", "", "tableSkip")}
-                                    onMouseLeave={() => setHoveredData(null)}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        スキップ率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="skipRate" />
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 font-medium">到達率</th>
-                                <th className="px-4 py-3 font-medium text-center">状態</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {sortedAds.map(ad => (
-                                <>
-                                    <tr
-                                        key={ad.id}
-                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                                        onClick={() => toggleExpand(ad.id)}
-                                    >
-                                        <td className="px-4 py-3">
-                                            <div className="font-medium text-slate-800 dark:text-white flex items-center gap-2">
-                                                <span className={`transition-transform text-[10px] text-slate-400 ${expandedRows.has(ad.id) ? 'rotate-90' : ''}`}>▶</span>
-                                                {ad.name}
-                                            </div>
-                                            <div className="text-xs text-slate-500 pl-5">{ad.schoolName}</div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                                                {ad.type === 'preroll' ? 'プリロール' : 'ミッドロール'}
-                                            </span>
-                                            {ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
-                                            {ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
-                                        </td>
-                                        <td className="px-4 py-3 font-mono">{ad.impressions.toLocaleString()}</td>
-                                        <td className="px-4 py-3 font-mono">{ad.clicks.toLocaleString()}</td>
-                                        <td className="px-4 py-3 font-mono">
-                                            <span className={ad.ctr > 2 ? 'text-emerald-600 font-bold' : ''}>{ad.ctr.toFixed(2)}%</span>
-                                        </td>
-                                        <td className="px-4 py-3 font-mono">
-                                            <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
-                                                {ad.completionRate?.toFixed(1) ?? '-'}%
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex gap-1">
-                                                <ProgressBar value={ad.reached25} label="25" />
-                                                <ProgressBar value={ad.reached50} label="50" />
-                                                <ProgressBar value={ad.reached75} label="75" />
-                                                <ProgressBar value={ad.reached100} label="100" />
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className={`inline-block w-2.5 h-2.5 rounded-full ${ad.isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
-                                        </td>
-                                    </tr>
-                                    {expandedRows.has(ad.id) && ad.schoolBreakdown && (
-                                        <tr className="bg-slate-50 dark:bg-slate-900/40 border-b border-dashed border-slate-200">
-                                            <td colSpan={9} className="p-4 pl-12">
-                                                <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-                                                    <h4 className="font-bold text-xs text-slate-500 mb-3 flex items-center gap-2">
-                                                        <Building2 className="h-3 w-3" /> 園別パフォーマンス内訳
-                                                    </h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        {ad.schoolBreakdown.slice(0, 6).map((s, idx) => {
-                                                            const max = Math.max(...(ad.schoolBreakdown?.map(x => x.impressions) || [1]), 1)
-                                                            return (
-                                                                <div key={idx} className="space-y-1">
-                                                                    <div className="flex justify-between text-xs">
-                                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{s.schoolName}</span>
-                                                                        <span className="text-slate-500">{s.impressions} imp</span>
-                                                                    </div>
-                                                                    <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(s.impressions / max) * 100}%` }} />
-                                                                    </div>
-                                                                    <div className="flex justify-end gap-3 text-[10px] text-slate-400 font-mono">
-                                                                        <span>Click: {s.clicks}</span>
-                                                                        <span>CTR: {s.ctr.toFixed(1)}%</span>
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                        {!ad.schoolBreakdown.length && <div className="text-slate-400 text-xs">データがありません</div>}
-                                                    </div>
+                    {/* School Breakdown & Device Cards */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* School Breakdown */}
+                        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Building2 className="h-4 w-4" /> 園別パフォーマンス (上位5園)</h3>
+                            <div className="space-y-4">
+                                {data.schoolBreakdown && data.schoolBreakdown.slice(0, 5).map((school, i) => {
+                                    const maxImp = Math.max(...data.schoolBreakdown.map(s => s.impressions), 1)
+                                    return (
+                                        <div key={i} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium text-slate-700 dark:text-slate-200">{school.schoolName}</span>
+                                                <div className="flex gap-4 text-xs">
+                                                    <span className="text-slate-500">{school.impressions.toLocaleString()} imp</span>
+                                                    <span className="text-emerald-600 font-bold">CTR {school.ctr.toFixed(1)}%</span>
                                                 </div>
+                                            </div>
+                                            <div className="h-2.5 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden flex">
+                                                <div
+                                                    className="h-full bg-indigo-500 rounded-full relative group cursor-pointer"
+                                                    style={{ width: `${(school.impressions / maxImp) * 100}%` }}
+                                                    onMouseEnter={(e) => {
+                                                        const rect = e.currentTarget.getBoundingClientRect()
+                                                        setHoveredData({
+                                                            x: rect.left + rect.width / 2,
+                                                            y: rect.top - 10,
+                                                            label: school.schoolName,
+                                                            value: `${school.impressions} imp`,
+                                                            subValue: `クリック: ${school.clicks} / CTR: ${school.ctr.toFixed(1)}%`
+                                                        })
+                                                    }}
+                                                    onMouseLeave={() => setHoveredData(null)}
+                                                />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                                {(!data.schoolBreakdown || data.schoolBreakdown.length === 0) && (
+                                    <div className="text-center py-8 text-slate-500 text-sm">データがありません</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Device Breakdown */}
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Monitor className="h-4 w-4" /> デバイス別</h3>
+                            <div className="space-y-4">
+                                <DeviceBar
+                                    label="モバイル" icon={Smartphone} count={data.deviceBreakdown.mobile} total={totalDevices} color="bg-blue-500"
+                                    onMouseEnter={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'モバイル', value: `${data.deviceBreakdown.mobile}回`, subValue: '視聴' })
+                                    }}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                                <DeviceBar
+                                    label="タブレット" icon={Tablet} count={data.deviceBreakdown.tablet} total={totalDevices} color="bg-purple-500"
+                                    onMouseEnter={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'タブレット', value: `${data.deviceBreakdown.tablet}回`, subValue: '視聴' })
+                                    }}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                                <DeviceBar
+                                    label="デスクトップ" icon={Monitor} count={data.deviceBreakdown.desktop} total={totalDevices} color="bg-emerald-500"
+                                    onMouseEnter={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: 'デスクトップ', value: `${data.deviceBreakdown.desktop}回`, subValue: '視聴' })
+                                    }}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                                <DeviceBar
+                                    label="不明" icon={CheckCircle2} count={data.deviceBreakdown.unknown} total={totalDevices} color="bg-slate-400"
+                                    onMouseEnter={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        setHoveredData({ x: rect.left + rect.width / 2, y: rect.top - 10, label: '不明', value: `${data.deviceBreakdown.unknown}回`, subValue: '視聴' })
+                                    }}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Ads Table */}
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <h2 className="font-bold text-lg">広告別パフォーマンス</h2>
+                            <span className="text-xs text-slate-500">{sortedAds.length}件の広告</span>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                                    <tr>
+                                        <th className="px-4 py-3 font-medium">広告</th>
+                                        <th className="px-4 py-3 font-medium">タイプ</th>
+                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                            onClick={() => handleSort('impressions')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "表示回数", "", "tableImpressions")}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                表示 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="impressions" />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                            onClick={() => handleSort('clicks')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "クリック数", "", "tableClicks")}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                クリック <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="clicks" />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                            onClick={() => handleSort('ctr')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "CTR", "", "tableCtr")}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                CTR <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="ctr" />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                            onClick={() => handleSort('completionRate')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "完了率", "", "tableCompletion")}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                完了率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="completionRate" />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                            onClick={() => handleSort('skipRate')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "スキップ率", "", "tableSkip")}
+                                            onMouseLeave={() => setHoveredData(null)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                スキップ率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="skipRate" />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">到達率</th>
+                                        <th className="px-4 py-3 font-medium text-center">状態</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {sortedAds.map(ad => (
+                                        <>
+                                            <tr
+                                                key={ad.id}
+                                                className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                                                onClick={() => toggleExpand(ad.id)}
+                                            >
+                                                <td className="px-4 py-3">
+                                                    <div className="font-medium text-slate-800 dark:text-white flex items-center gap-2">
+                                                        <span className={`transition-transform text-[10px] text-slate-400 ${expandedRows.has(ad.id) ? 'rotate-90' : ''}`}>▶</span>
+                                                        {ad.name}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 pl-5">{ad.schoolName}</div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                        {ad.type === 'preroll' ? 'プリロール' : 'ミッドロール'}
+                                                    </span>
+                                                    {ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
+                                                    {ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
+                                                </td>
+                                                <td className="px-4 py-3 font-mono">{ad.impressions.toLocaleString()}</td>
+                                                <td className="px-4 py-3 font-mono">{ad.clicks.toLocaleString()}</td>
+                                                <td className="px-4 py-3 font-mono">
+                                                    <span className={ad.ctr > 2 ? 'text-emerald-600 font-bold' : ''}>{ad.ctr.toFixed(2)}%</span>
+                                                </td>
+                                                <td className="px-4 py-3 font-mono">
+                                                    <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
+                                                        {ad.completionRate?.toFixed(1) ?? '-'}%
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-1">
+                                                        <ProgressBar value={ad.reached25} label="25" />
+                                                        <ProgressBar value={ad.reached50} label="50" />
+                                                        <ProgressBar value={ad.reached75} label="75" />
+                                                        <ProgressBar value={ad.reached100} label="100" />
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${ad.isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
+                                                </td>
+                                            </tr>
+                                            {expandedRows.has(ad.id) && ad.schoolBreakdown && (
+                                                <tr className="bg-slate-50 dark:bg-slate-900/40 border-b border-dashed border-slate-200">
+                                                    <td colSpan={9} className="p-4 pl-12">
+                                                        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+                                                            <h4 className="font-bold text-xs text-slate-500 mb-3 flex items-center gap-2">
+                                                                <Building2 className="h-3 w-3" /> 園別パフォーマンス内訳
+                                                            </h4>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                {ad.schoolBreakdown.slice(0, 6).map((s, idx) => {
+                                                                    const max = Math.max(...(ad.schoolBreakdown?.map(x => x.impressions) || [1]), 1)
+                                                                    return (
+                                                                        <div key={idx} className="space-y-1">
+                                                                            <div className="flex justify-between text-xs">
+                                                                                <span className="font-medium text-slate-700 dark:text-slate-300">{s.schoolName}</span>
+                                                                                <span className="text-slate-500">{s.impressions} imp</span>
+                                                                            </div>
+                                                                            <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(s.impressions / max) * 100}%` }} />
+                                                                            </div>
+                                                                            <div className="flex justify-end gap-3 text-[10px] text-slate-400 font-mono">
+                                                                                <span>Click: {s.clicks}</span>
+                                                                                <span>CTR: {s.ctr.toFixed(1)}%</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )
+                                                                })}
+                                                                {!ad.schoolBreakdown.length && <div className="text-slate-400 text-xs">データがありません</div>}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
+                                    ))}
+                                    {sortedAds.length === 0 && (
+                                        <tr>
+                                            <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
+                                                データがありません
                                             </td>
                                         </tr>
                                     )}
-                                </>
-                            ))}
-                            {sortedAds.length === 0 && (
-                                <tr>
-                                    <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
-                                        データがありません
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Custom Tooltip */}
-            {hoveredData && (
-                <div
-                    className="fixed z-50 bg-slate-900/95 text-white text-xs rounded-lg px-4 py-3 pointer-events-none shadow-2xl backdrop-blur-md transform -translate-x-1/2 -translate-y-full mt-[-8px] transition-all duration-75 max-w-[240px] border border-slate-700"
-                    style={{ left: hoveredData.x, top: hoveredData.y }}
-                >
-                    <div className="font-bold mb-1 text-center border-b border-slate-700 pb-1 text-slate-200">{hoveredData.label}</div>
-                    <div className="flex flex-col items-center">
-                        {hoveredData.value && <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">{hoveredData.value}</span>}
-                        {hoveredData.subValue && <span className="text-slate-400 text-[10px] mt-1">{hoveredData.subValue}</span>}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    {hoveredData.description && (
-                        <div className="mt-2 pt-2 border-t border-slate-700 text-slate-300 text-center leading-relaxed font-medium">
-                            {hoveredData.description}
+
+                    {/* Custom Tooltip */}
+                    {hoveredData && (
+                        <div
+                            className="fixed z-50 bg-slate-900/95 text-white text-xs rounded-lg px-4 py-3 pointer-events-none shadow-2xl backdrop-blur-md transform -translate-x-1/2 -translate-y-full mt-[-8px] transition-all duration-75 max-w-[240px] border border-slate-700"
+                            style={{ left: hoveredData.x, top: hoveredData.y }}
+                        >
+                            <div className="font-bold mb-1 text-center border-b border-slate-700 pb-1 text-slate-200">{hoveredData.label}</div>
+                            <div className="flex flex-col items-center">
+                                {hoveredData.value && <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">{hoveredData.value}</span>}
+                                {hoveredData.subValue && <span className="text-slate-400 text-[10px] mt-1">{hoveredData.subValue}</span>}
+                            </div>
+                            {hoveredData.description && (
+                                <div className="mt-2 pt-2 border-t border-slate-700 text-slate-300 text-center leading-relaxed font-medium">
+                                    {hoveredData.description}
+                                </div>
+                            )}
+                            {/* Tiny Triangle Pointer */}
+                            <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-700" />
                         </div>
                     )}
-                    {/* Tiny Triangle Pointer */}
-                    <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-700" />
                 </div>
             )}
         </div>
@@ -686,8 +765,6 @@ function DeviceBar({ label, icon: Icon, count, total, color, onMouseEnter, onMou
         </div>
     )
 }
-
-
 
 function ProgressBar({ value, label }: { value?: number, label: string }) {
     if (value === undefined) return <div className="w-8 h-4 bg-slate-100 rounded text-[8px] text-slate-400 flex items-center justify-center">-</div>
