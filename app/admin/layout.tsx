@@ -22,7 +22,7 @@ export default function AdminLayout({
         { href: '/admin/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
         { href: '/admin/sponsors', label: 'スポンサー管理', icon: Ticket },
         { href: '/admin/preroll', label: 'プレロール広告', icon: Video },
-        { href: '/admin/midroll', label: 'ミッドロール広告', icon: FastForward },
+        // { href: '/admin/midroll', label: 'ミッドロール広告', icon: FastForward },
         // { href: '/admin/settings', label: '設定', icon: Settings },
     ]
 

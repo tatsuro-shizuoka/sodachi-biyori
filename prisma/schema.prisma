@@ -145,10 +145,12 @@ model Sponsor {
   validFrom        DateTime?
   validTo          DateTime?
 
-  impressions SponsorImpression[]
-  clicks      SponsorClick[]
-  supports    SponsorSupport[]
-  createdAt   DateTime            @default(now())
+  impressions      SponsorImpression[]
+  clicks           SponsorClick[]
+  supports         SponsorSupport[]
+  prerollAds       PrerollAd[]
+  midrollAds       MidrollAd[]
+  createdAt        DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   schoolId    String?
   school      School?             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -336,11 +338,16 @@ model PrerollAd {
   validTo          DateTime? // 掲載終了日
   schoolId         String?   // null = 全園共通
   school           School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  sponsorId        String?
+  sponsor          Sponsor?  @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+
   impressions      AdImpression[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   @@index([schoolId])
+  @@index([sponsorId])
   @@index([isActive])
 }
 
@@ -361,11 +368,16 @@ model MidrollAd {
   validTo          DateTime?
   schoolId         String?
   school           School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  sponsorId        String?
+  sponsor          Sponsor?  @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+
   impressions      AdImpression[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   @@index([schoolId])
+  @@index([sponsorId])
   @@index([isActive])
   @@index([triggerType])
 }
