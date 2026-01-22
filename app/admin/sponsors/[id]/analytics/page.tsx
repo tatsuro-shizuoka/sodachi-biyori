@@ -26,6 +26,7 @@ interface AnalyticsData {
     videoBreakdown: VideoAdMetrics[]
     schoolBreakdown: { name: string, impressions: number }[]
     chartData: { label: string, value: number }[]
+    eventMetrics: { label: string, category: string, count: number }[]
 }
 
 export default function SponsorDetailAnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -135,6 +136,36 @@ export default function SponsorDetailAnalyticsPage({ params }: { params: Promise
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Event Breakdown (New) */}
+                <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                        <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <MousePointer2 className="h-5 w-5 text-pink-500" />
+                            イベント分析
+                        </h3>
+                    </div>
+                    <div className="overflow-y-auto max-h-[300px]">
+                        <table className="w-full text-sm text-left">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {data.eventMetrics?.map((event, i) => (
+                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-slate-700 dark:text-slate-200">{event.label}</div>
+                                            <div className="text-xs text-slate-400">{event.category}</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-mono font-bold text-indigo-600">
+                                            {event.count.toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {(!data.eventMetrics || data.eventMetrics.length === 0) && (
+                                    <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-400">データがありません</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 {/* Trend Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <h3 className="font-bold text-slate-700 dark:text-slate-300 mb-6 flex items-center gap-2">
