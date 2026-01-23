@@ -402,8 +402,144 @@ export default function SponsorPage() {
     );
 }
 
+const MockupScreenContent = () => {
+    const [view, setView] = React.useState<'gallery' | 'player'>('gallery');
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setView(current => current === 'gallery' ? 'player' : 'gallery');
+        }, 4000); // Toggle every 4 seconds
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="w-full h-full relative bg-gray-50 overflow-hidden">
+            {/* Transition Wrapper */}
+            <motion.div
+                key={view}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="w-full h-full absolute inset-0"
+            >
+                {view === 'gallery' ? (
+                    // === GALLERY VIEW ===
+                    <div className="flex flex-col h-full">
+                        {/* Header */}
+                        <div className="bg-orange p-4 pt-10 px-6 flex justify-between items-center text-white shadow-md z-10">
+                            <div className="font-bold text-lg">2026年1月</div>
+                            <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+                        </div>
+
+                        <div className="p-4 flex-1 overflow-hidden flex flex-col gap-4">
+                            {/* Top Banner (Entry/Standard) */}
+                            <motion.div
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="w-full h-24 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden group"
+                            >
+                                <div className="absolute top-2 right-2 text-[10px] bg-black/30 px-2 py-0.5 rounded-full">PR</div>
+                                <div className="text-center">
+                                    <p className="font-bold text-lg">春の体験教室 受付中！</p>
+                                    <p className="text-xs opacity-90">〇〇スイミングスクール</p>
+                                </div>
+                            </motion.div>
+
+                            {/* Gallery Grid */}
+                            <p className="text-xs text-gray-400 font-bold mt-1">1月23日(金) お遊戯会練習</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
+                                </div>
+                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
+                                </div>
+                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
+                                </div>
+                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer Banner (Mini) */}
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="mt-auto m-4 mb-8 bg-white border border-gray-200 rounded-lg flex items-center p-3 shadow-lg z-20"
+                        >
+                            <div className="w-8 h-8 bg-green-100 rounded mr-3 flex items-center justify-center"><Smartphone className="w-4 h-4 text-green" /></div>
+                            <div>
+                                <p className="text-[10px] text-gray-400">Sponsored</p>
+                                <p className="text-xs font-bold text-gray-700">安心安全な食材宅配なら〇〇</p>
+                            </div>
+                        </motion.div>
+                    </div>
+                ) : (
+                    // === PLAYER VIEW (Preroll) ===
+                    <div className="flex flex-col h-full bg-black text-white relative">
+                        {/* Video Content Placeholder */}
+                        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                            <PlayCircle className="w-20 h-20 text-white/10" />
+                        </div>
+
+                        {/* Ad Overlay UI */}
+                        <div className="relative z-10 flex flex-col h-full justify-between p-6 pt-12 pb-12">
+                            {/* Top Bar */}
+                            <div className="flex justify-between items-start">
+                                <div className="bg-black/60 backdrop-blur px-3 py-1 rounded text-xs font-medium">
+                                    広告 • 0:15
+                                </div>
+                                <div className="bg-black/40 w-8 h-8 rounded-full flex items-center justify-center">
+                                    <div className="w-1 h-1 bg-white rounded-full box-content border-[3px] border-transparent border-t-white animate-spin"></div>
+                                </div>
+                            </div>
+
+                            {/* Center Ad Content */}
+                            <div className="text-center">
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="inline-block bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 mb-4"
+                                >
+                                    <h3 className="text-xl font-bold mb-2">CM動画 再生中</h3>
+                                    <p className="text-sm opacity-80">あなたの街のパン屋さん</p>
+                                </motion.div>
+                            </div>
+
+                            {/* Bottom CTA */}
+                            <div className="bg-white/10 backdrop-blur border border-white/10 p-4 rounded-xl flex items-center justify-between hover:bg-white/20 transition-colors cursor-pointer">
+                                <div>
+                                    <p className="text-xs text-yellow-400 font-bold mb-0.5">SPONSORED</p>
+                                    <p className="text-sm font-bold">詳しく見る</p>
+                                </div>
+                                <div className="bg-yellow-400 text-black p-1.5 rounded-full">
+                                    <MousePointerClick className="w-4 h-4" />
+                                </div>
+                            </div>
+
+                            {/* Preroll Indicator */}
+                            <div className="absolute bottom-1 left-0 w-full h-1 bg-gray-800">
+                                <motion.div
+                                    initial={{ width: "0%" }}
+                                    animate={{ width: "100%" }}
+                                    transition={{ duration: 4, ease: "linear" }}
+                                    className="h-full bg-yellow-400"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+        </div>
+    );
+}
+
 const ImageIcon = () => (
     <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
 )
+
