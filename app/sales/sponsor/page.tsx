@@ -3,29 +3,47 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Heart, Sun, MapPin, ShieldCheck, Users, PlayCircle, Smartphone, MousePointerClick, Star } from 'lucide-react';
+import { Heart, Sun, MapPin, ShieldCheck, Users, PlayCircle, Smartphone, MousePointerClick, Star, ChevronRight, CheckCircle2, Quote } from 'lucide-react';
 
 const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
         >
             {children}
         </motion.div>
     );
 };
 
+const SectionHeader = ({ en, ja }: { en: string, ja: string }) => (
+    <div className="text-center mb-16 md:mb-24">
+        <motion.span
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-orange-dark/80 font-bold tracking-[0.3em] uppercase text-xs md:text-sm block mb-3 font-outfit"
+        >
+            {en}
+        </motion.span>
+        <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 font-zen-maru"
+        >
+            {ja}
+        </motion.h2>
+    </div>
+)
+
 const PhoneMockup = ({ children }: { children: React.ReactNode }) => (
-    <div className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl">
-        <div className="w-[148px] h-[18px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute z-20"></div>
-        <div className="h-[32px] w-[3px] bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
-        <div className="h-[46px] w-[3px] bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
-        <div className="h-[46px] w-[3px] bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
-        <div className="h-[64px] w-[3px] bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
-        <div className="rounded-[2rem] overflow-hidden w-full h-full bg-white relative">
+    <div className="relative mx-auto border-gray-800 bg-gray-800 border-[12px] rounded-[3rem] h-[650px] w-[320px] shadow-2xl ring-1 ring-white/20">
+        <div className="w-[120px] h-[24px] bg-black top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute z-20"></div>
+        <div className="rounded-[2.4rem] overflow-hidden w-full h-full bg-white relative">
             {children}
         </div>
     </div>
@@ -33,348 +51,367 @@ const PhoneMockup = ({ children }: { children: React.ReactNode }) => (
 
 export default function SponsorPage() {
     return (
-        <div className="min-h-screen relative overflow-hidden text-text bg-cream font-sans">
-            {/* Background Decor */}
-            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-                <motion.div
-                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-20 -right-20 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-60"
-                />
-                <motion.div
-                    animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 0] }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-                    className="absolute top-1/3 -left-20 w-72 h-72 bg-green-100 rounded-full blur-3xl opacity-60"
-                />
+        <div className="min-h-screen relative overflow-hidden text-gray-700 bg-[#FFFDF9] font-sans selection:bg-orange-100 selection:text-orange-900">
+
+            {/* Elegant Background Gradients */}
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+                <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-orange-100/40 to-yellow-50/40 rounded-full blur-[100px]" />
+                <div className="absolute top-[40%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-green-50/40 to-emerald-50/40 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-10%] right-[10%] w-[600px] h-[600px] bg-gradient-to-tl from-pink-50/40 to-rose-50/40 rounded-full blur-[100px]" />
             </div>
 
             {/* Header */}
-            <header className="fixed top-0 w-full bg-cream/90 backdrop-blur-sm z-50 border-b border-orange-100">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="w-32 md:w-40">
+            <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
+                <div className="container mx-auto px-6 py-4 flex justify-between items-center max-w-7xl">
+                    <div className="w-32 hover:opacity-80 transition-opacity cursor-pointer">
                         <Image src="/logo_sodachi.png" alt="そだちびより" width={200} height={100} className="w-full h-auto" />
                     </div>
-                    <nav className="hidden md:flex gap-8 text-sm font-medium text-text/80">
-                        <a href="#value" className="hover:text-orange transition-colors">広告の価値</a>
-                        <a href="#demo" className="hover:text-orange transition-colors">掲載イメージ</a>
+                    <nav className="hidden md:flex gap-10 text-sm font-bold text-gray-600 tracking-wide font-zen-maru">
+                        <a href="#concept" className="hover:text-orange transition-colors">想い</a>
+                        <a href="#value" className="hover:text-orange transition-colors">価値</a>
                         <a href="#pricing" className="hover:text-orange transition-colors">プラン</a>
-                        <a href="#contact" className="px-4 py-2 bg-orange text-white rounded-full hover:bg-orange-dark transition-colors">お問い合わせ</a>
+                        <a href="#contact" className="px-6 py-2.5 bg-gray-900 text-white rounded-full hover:bg-orange hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                            お問い合わせ
+                        </a>
                     </nav>
                 </div>
             </header>
 
-            {/* Hero */}
-            <section className="pt-32 pb-20 md:pt-48 md:pb-32 px-6 relative z-10">
-                <div className="container mx-auto text-center max-w-4xl">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="mb-8 flex justify-center"
-                    >
-                        <div className="bg-orange-100 p-6 rounded-full inline-block">
-                            <Heart className="w-16 h-16 text-orange" fill="currentColor" />
+            {/* Hero Section */}
+            <section className="pt-32 pb-24 md:pt-48 md:pb-40 px-6 relative z-10">
+                <div className="container mx-auto max-w-7xl">
+                    <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                        <div className="lg:w-1/2 text-center lg:text-left">
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8 }}
+                            >
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-100 text-orange-800 text-xs font-bold tracking-widest mb-8">
+                                    <Sun className="w-4 h-4" />
+                                    OFFICIAL SPONSORSHIP
+                                </div>
+                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.15] mb-8 font-zen-maru text-gray-900 tracking-tight">
+                                    地域で育む、<br />
+                                    <span className="text-orange relative inline-block">
+                                        未来の笑顔。
+                                        <svg className="absolute w-full h-3 -bottom-1 left-0 text-orange/30" viewBox="0 0 100 10" preserveAspectRatio="none">
+                                            <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="6" fill="none" />
+                                        </svg>
+                                    </span>
+                                </h1>
+                                <p className="text-lg md:text-xl text-gray-500 mb-12 leading-loose font-medium">
+                                    「そだちびより」は、園児の成長記録を保護者へ届けるツールです。<br className="hidden lg:block" />
+                                    あなたの企業ブランドも、その<span className="text-gray-900 font-bold underline decoration-orange-300 decoration-2 underline-offset-4">温かい物語の一部</span>になりませんか？<br />
+                                    地域に愛される活動を、ここから。
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                                    <button className="bg-gray-900 text-white text-lg font-bold px-10 py-5 rounded-full shadow-xl hover:shadow-2xl hover:bg-orange transition-all duration-300 flex items-center justify-center gap-3 group">
+                                        <Heart className="w-5 h-5 group-hover:scale-125 transition-transform" fill="currentColor" />
+                                        スポンサーに申し込む
+                                    </button>
+                                    <button className="bg-white text-gray-700 border border-gray-200 text-lg font-bold px-10 py-5 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-300">
+                                        資料をダウンロード
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 tracking-wide text-gray-800"
-                    >
-                        子供の成長を、<br className="md:hidden" />地域で一緒に。
-                    </motion.h1>
-
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.4 }}
-                        className="text-lg md:text-xl text-text/80 mb-12 leading-relaxed max-w-2xl mx-auto font-medium"
-                    >
-                        「そだちびより」は、園での子供たちの様子を保護者に届ける動画共有サービスです。<br />
-                        <span className="text-orange font-bold">地域で見守る温かいサポーター</span>として、<br className="md:hidden" />あなたの想いを届けませんか？
-                    </motion.p>
-                </div>
-            </section>
-
-            {/* Value Proposition */}
-            <section id="value" className="py-20 bg-white/60 relative z-10">
-                <div className="container mx-auto px-6 max-w-6xl">
-                    <div className="text-center mb-16">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-4">選ばれる3つの理由</h2>
-                        <p className="text-text/70">なぜ、今「そだちびより」の広告が効果的なのか。</p>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-10">
-                        <FadeInSection delay={0.2}>
-                            <div className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow h-full border border-orange-50">
-                                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
-                                    <MapPin className="w-8 h-8" />
+                        <div className="lg:w-1/2 relative">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 1, delay: 0.2 }}
+                                className="relative z-10"
+                            >
+                                {/* Abstract Visual Representation */}
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-6 mt-12">
+                                        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-gray-50 transform hover:-translate-y-2 transition-transform duration-500">
+                                            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mb-4 text-green-600">
+                                                <MapPin className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2 text-gray-800">地域密着</h3>
+                                            <p className="text-sm text-gray-500 leading-relaxed">指定エリアの保護者に100%リーチ。</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-orange-400 to-orange-500 p-6 rounded-[2rem] shadow-xl text-white transform hover:-translate-y-2 transition-transform duration-500">
+                                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 text-white">
+                                                <Heart className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2">信頼の証</h3>
+                                            <p className="text-sm text-white/90 leading-relaxed">園の公認サポーターとしてのブランディング。</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-gray-50 transform hover:-translate-y-2 transition-transform duration-500">
+                                            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 text-blue-600">
+                                                <Smartphone className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2 text-gray-800">日常に溶け込む</h3>
+                                            <p className="text-sm text-gray-500 leading-relaxed">毎日見るアプリだから、自然に記憶に残る。</p>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-gray-50 transform hover:-translate-y-2 transition-transform duration-500 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-pink-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="relative z-10">
+                                                <div className="w-12 h-12 bg-pink-100 rounded-2xl flex items-center justify-center mb-4 text-pink-600">
+                                                    <Users className="w-6 h-6" />
+                                                </div>
+                                                <h3 className="font-bold text-lg mb-2 text-gray-800">CSR活動</h3>
+                                                <p className="text-sm text-gray-500 leading-relaxed">次世代育成支援としての企業価値向上。</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h3 className="text-xl font-bold mb-4">圧倒的なターゲティング</h3>
-                                <p className="text-text/80 leading-relaxed">
-                                    「〇〇区の〇〇幼稚園」という単位で指定可能。<br />
-                                    商圏内の子育て世代（保護者）に100%ダイレクトに届くため、無駄打ちがありません。
-                                </p>
-                            </div>
-                        </FadeInSection>
-                        <FadeInSection delay={0.4}>
-                            <div className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow h-full border border-orange-50">
-                                <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-6 text-green-600">
-                                    <ShieldCheck className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-4">園「公認」の信頼感</h3>
-                                <p className="text-text/80 leading-relaxed">
-                                    大切なわが子の動画を見るアプリ内に掲載されるため、<br />
-                                    「園が認めた安心できるお店・サービス」として、保護者にポジティブに認知されます。
-                                </p>
-                            </div>
-                        </FadeInSection>
-                        <FadeInSection delay={0.6}>
-                            <div className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow h-full border border-orange-50">
-                                <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-6 text-pink-600">
-                                    <Users className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-4">地域での子育て支援</h3>
-                                <p className="text-text/80 leading-relaxed">
-                                    単なる広告宣伝ではありません。<br />
-                                    「地域の子供たちの成長を一緒に見守るパートナー」として、企業のブランド価値を高めます。
-                                </p>
-                            </div>
-                        </FadeInSection>
+                            </motion.div>
+                            {/* Decor Blobs */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/40 blur-3xl -z-10 rounded-full mix-blend-overlay"></div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Demo UI Section */}
-            <section id="demo" className="py-24 bg-orange-50/50 relative z-10 overflow-hidden">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-24">
-                        {/* Description */}
-                        <div className="lg:w-1/2 max-w-lg">
+            {/* Concept Quote Section */}
+            <section id="concept" className="py-32 bg-white relative z-10">
+                <div className="container mx-auto px-6 max-w-4xl text-center">
+                    <FadeInSection>
+                        <Quote className="w-12 h-12 text-orange/20 mx-auto mb-8 transform rotate-180" />
+                        <h2 className="text-2xl md:text-4xl font-bold font-zen-maru leading-loose text-gray-700 mb-12">
+                            「見て！今日こんなことできたよ！」<br />
+                            <span className="text-base md:text-xl font-normal text-gray-500 block mt-6 font-sans">
+                                そんな親子の会話が生まれる瞬間を、<br />
+                                あなたの企業が支えているとしたら。
+                            </span>
+                        </h2>
+                        <div className="w-16 h-1 bg-orange/30 mx-auto rounded-full mb-12"></div>
+                        <p className="text-gray-500 leading-loose text-lg font-medium">
+                            そだちびよりは、見逃されがちな日々の成長を「動画」で保護者に届けるサービスです。<br />
+                            しかし、サービスの継続には地域の皆様のご協力が欠かせません。<br /><br />
+                            単なる広告ではありません。<br />
+                            それは、地域の子どもたちの未来への<span className="text-orange-dark font-bold">「投資」</span>であり、<br />
+                            保護者への<span className="text-orange-dark font-bold">「応援」</span>のエールなのです。
+                        </p>
+                    </FadeInSection>
+                </div>
+            </section>
+
+            {/* Feature Section with Mockup */}
+            <section id="value" className="py-32 bg-[#fffcf5] relative z-10">
+                <div className="container mx-auto px-6 max-w-7xl">
+                    <SectionHeader en="Experience" ja="自然で、強力なタッチポイント" />
+
+                    <div className="flex flex-col lg:flex-row items-center gap-20">
+                        <div className="lg:w-1/2 order-2 lg:order-1">
+                            <div className="relative">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.8 }}
+                                    className="relative z-20"
+                                >
+                                    <PhoneMockup>
+                                        <MockupScreenContent />
+                                    </PhoneMockup>
+                                    <div className="absolute -right-12 bottom-20 bg-white p-4 rounded-2xl shadow-xl z-30 hidden md:block animate-bounce-slow">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-green-100 p-2 rounded-lg text-green-600"><CheckCircle2 className="w-5 h-5" /></div>
+                                            <div>
+                                                <p className="text-xs text-gray-400 font-bold uppercase">Viewability</p>
+                                                <p className="font-bold text-gray-800">視認率 98%以上</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                                {/* Blob */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[120%] bg-gradient-to-tr from-orange-100/50 to-pink-100/50 rounded-full blur-[80px] -z-10"></div>
+                            </div>
+                        </div>
+
+                        <div className="lg:w-1/2 order-1 lg:order-2">
                             <FadeInSection>
-                                <span className="text-orange font-bold tracking-widest uppercase mb-2 block">AD Experience</span>
-                                <h2 className="text-3xl md:text-4xl font-bold mb-6">自然な形で、<br />でも確実に目に留まる。</h2>
-                                <ul className="space-y-6">
-                                    <li className="flex gap-4">
-                                        <div className="mt-1 bg-white p-2 rounded-lg shadow-sm text-orange shrink-0 h-fit">
-                                            <PlayCircle className="w-6 h-6" />
+                                <h3 className="text-2xl font-bold mb-6 text-gray-800 font-zen-maru">
+                                    保護者の生活動線に、<br />
+                                    <span className="text-orange">違和感なく</span>溶け込む。
+                                </h3>
+                                <p className="text-gray-500 leading-relaxed mb-12">
+                                    我が子の成長を見るポジティブな感情の中で、あなたのメッセージが届きます。<br />
+                                    強制的な割り込みではなく、体験の一部として設計されています。
+                                </p>
+
+                                <div className="space-y-8">
+                                    <div className="flex gap-6 group hover:bg-white hover:shadow-lg p-6 rounded-3xl transition-all duration-300 border border-transparent hover:border-gray-100">
+                                        <div className="mt-1 bg-gradient-to-br from-orange-400 to-orange-500 w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-orange-200 shadow-lg group-hover:scale-110 transition-transform">
+                                            <PlayCircle className="w-7 h-7" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-lg mb-1">動画広告 (Standard/Entry)</h4>
-                                            <p className="text-text/70 text-sm">子供の動画を見る前や一覧の中で、自然に再生。テレビCMのようなストーリー性のある訴求が可能です。</p>
+                                            <h4 className="font-bold text-xl mb-2 text-gray-800">Preroll Ads <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded ml-2">Standard / Entry</span></h4>
+                                            <p className="text-gray-500 leading-relaxed text-sm">
+                                                動画再生直前の、最も期待感が高まる瞬間にCMを配信。<br />
+                                                YouTube広告のような形式で、確実な認知を獲得します。
+                                            </p>
                                         </div>
+                                    </div>
+
+                                    <div className="flex gap-6 group hover:bg-white hover:shadow-lg p-6 rounded-3xl transition-all duration-300 border border-transparent hover:border-gray-100">
+                                        <div className="mt-1 bg-white w-14 h-14 rounded-2xl flex items-center justify-center text-green-500 shrink-0 border border-green-100 shadow-sm group-hover:scale-110 transition-transform">
+                                            <Smartphone className="w-7 h-7" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-xl mb-2 text-gray-800">Gallery Ads <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded ml-2">All Plans</span></h4>
+                                            <p className="text-gray-500 leading-relaxed text-sm">
+                                                毎日アクセスするアルバム一覧画面にバナーを常設。<br />
+                                                刷り込み効果（ザイオンス効果）により、親近感を醸成します。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeInSection>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing */}
+            <section id="pricing" className="py-32 relative z-10">
+                <div className="container mx-auto px-6 max-w-7xl">
+                    <SectionHeader en="Sponsorship Plans" ja="地域の絆を結ぶプラン" />
+
+                    {/* Pricing Grid */}
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+
+                        {/* MINI */}
+                        <FadeInSection delay={0.1}>
+                            <div className="bg-white rounded-[2rem] p-8 border border-gray-100 h-full flex flex-col hover:border-orange-200 transition-colors group relative overflow-hidden">
+                                <div className="mb-6 pb-6 border-b border-gray-50">
+                                    <p className="text-xs font-bold tracking-widest text-gray-400 mb-2 uppercase">Starter</p>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-1">Mini Plan</h3>
+                                    <p className="text-sm text-gray-400">気軽なスタートに</p>
+                                </div>
+                                <div className="mb-8">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-4xl font-bold text-gray-800 tracking-tight">5,000</span>
+                                        <span className="text-sm text-gray-500">円 / 月</span>
+                                    </div>
+                                </div>
+                                <ul className="space-y-4 mb-8 flex-1">
+                                    <li className="flex items-center gap-3 text-sm text-gray-600">
+                                        <CheckCircle2 className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                                        <span className="font-bold">フッターバナー</span> (小)
                                     </li>
-                                    <li className="flex gap-4">
-                                        <div className="mt-1 bg-white p-2 rounded-lg shadow-sm text-green shrink-0 h-fit">
-                                            <Smartphone className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-lg mb-1">ギャラリーバナー</h4>
-                                            <p className="text-text/70 text-sm">保護者が毎日アクセスする動画一覧画面の上部やフッターに常設。刷り込み効果抜群です。</p>
-                                        </div>
+                                    <li className="flex items-center gap-3 text-sm text-gray-600">
+                                        <CheckCircle2 className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                                        地域イベント告知可
                                     </li>
                                 </ul>
-                            </FadeInSection>
-                        </div>
+                                <button className="w-full py-4 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 hover:text-gray-900 transition-all text-sm tracking-wide">
+                                    申し込む
+                                </button>
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 group-hover:bg-gray-400 transition-colors"></div>
+                            </div>
+                        </FadeInSection>
 
-                        {/* Mobile Mockup */}
-                        <div className="lg:w-1/3 relative">
-                            <FadeInSection delay={0.3}>
-                                <div className="relative z-10 transform lg:rotate-3 transition-transform hover:rotate-0 duration-500">
-                                    <PhoneMockup>
-                                        {/* Header Mock */}
-                                        <div className="bg-orange p-4 flex justify-between items-center text-white pt-10 px-6">
-                                            <div className="font-bold">2026年1月</div>
-                                            <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-                                        </div>
-                                        {/* Gallery Mock */}
-                                        <div className="p-4 bg-gray-50 h-full overflow-hidden flex flex-col gap-4">
-                                            {/* Top Banner (Entry/Standard) */}
-                                            <div className="w-full h-24 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden group">
-                                                <div className="absolute top-2 right-2 text-[10px] bg-black/30 px-2 py-0.5 rounded-full">PR</div>
-                                                <div className="text-center">
-                                                    <p className="font-bold text-lg">春の体験教室 受付中！</p>
-                                                    <p className="text-xs opacity-90">〇〇スイミングスクール</p>
-                                                </div>
-                                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                                            </div>
-
-                                            {/* Video Grid Mock */}
-                                            <p className="text-xs text-gray-400 font-bold mt-2">1月23日(金) お遊戯会練習</p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden">
-                                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8" /></div>
-                                                </div>
-                                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden">
-                                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8" /></div>
-                                                </div>
-                                                {/* In-feed Ad (Standard) */}
-                                                <div className="col-span-2 aspect-video bg-gray-800 rounded-lg relative overflow-hidden flex items-center justify-center text-white">
-                                                    <div className="absolute top-2 left-2 text-[10px] bg-white/20 px-2 py-0.5 rounded">PR: 60秒動画</div>
-                                                    <p className="font-bold">あなたの街のパン屋さん</p>
-                                                    <p className="text-xs opacity-60 mt-1">焼きたての香りを食卓へ</p>
-                                                </div>
-                                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden"></div>
-                                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden"></div>
-                                            </div>
-
-                                            {/* Footer Banner (Mini) */}
-                                            <div className="mt-auto mb-8 w-full h-12 bg-white border border-gray-200 rounded-lg flex items-center px-4 shadow-sm shrink-0">
-                                                <div className="w-8 h-8 bg-gray-100 rounded mr-3"></div>
-                                                <div>
-                                                    <p className="text-[10px] text-gray-400">Sponsored</p>
-                                                    <p className="text-xs font-bold text-gray-700">安心安全な食材宅配なら〇〇</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </PhoneMockup>
-                                </div>
-                                {/* Decorative blob behind phone */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-96 bg-gradient-to-tr from-orange-200 to-pink-200 rounded-full blur-3xl -z-10 opacity-60"></div>
-                            </FadeInSection>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Pricing Section */}
-            <section id="pricing" className="py-24 relative z-10">
-                <div className="container mx-auto px-6">
-                    <FadeInSection>
-                        <div className="text-center mb-16">
-                            <span className="text-green font-bold tracking-widest uppercase">Community Support</span>
-                            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">地域応援プラン</h2>
-                            <p className="text-text/70">ビジネスの規模や目的に合わせて選べる3つのプランをご用意しました。</p>
-                        </div>
-                    </FadeInSection>
-
-                    {/* Main 3 Plans */}
-                    <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
-
-                        {/* MINI Plan */}
+                        {/* ENTRY */}
                         <FadeInSection delay={0.2}>
-                            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all h-full flex flex-col relative">
-                                <div className="mb-4">
-                                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold tracking-wider">MINI</span>
+                            <div className="bg-white rounded-[2rem] p-8 border border-orange-100 shadow-xl shadow-orange-100/30 h-full flex flex-col relative transform md:-translate-y-4 z-10">
+                                <div className="absolute top-6 right-6">
+                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">Popular</span>
                                 </div>
-                                <div className="mb-6">
+                                <div className="mb-6 pb-6 border-b border-dashed border-orange-100">
+                                    <p className="text-xs font-bold tracking-widest text-orange mb-2 uppercase">Standard</p>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-1">Entry Plan</h3>
+                                    <p className="text-sm text-gray-400">動画で魅力を伝える</p>
+                                </div>
+                                <div className="mb-8">
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl font-bold text-text">5,000</span>
-                                        <span className="text-sm text-text/60">円 / 月</span>
+                                        <span className="text-5xl font-bold text-orange tracking-tight">10,000</span>
+                                        <span className="text-sm text-gray-500">円 / 月</span>
                                     </div>
-                                    <p className="text-sm text-text/60 mt-2">気軽なスタートに</p>
                                 </div>
-                                <div className="space-y-4 mb-8 flex-1 border-t border-gray-100 pt-6">
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-green"><MousePointerClick className="w-4 h-4" /></div>
-                                        <span className="font-bold">フッターバナー</span>
-                                    </div>
-                                    <p className="text-xs text-text/60 pl-7">アプリ下部にロゴと社名を表示。常にユーザーの目に入ります。</p>
-                                </div>
-                                <button className="w-full py-3 rounded-xl border-2 border-orange-200 text-orange-dark font-bold hover:bg-orange-50 transition-colors">
-                                    申し込む
+                                <ul className="space-y-4 mb-8 flex-1">
+                                    <li className="flex items-center gap-3 text-sm text-gray-700">
+                                        <div className="bg-orange p-0.5 rounded-full text-white"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                                        <span className="font-bold">15秒 動画広告</span> (Preroll)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-sm text-gray-700">
+                                        <div className="bg-orange-200 p-0.5 rounded-full text-white"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                                        <span className="font-bold">ギャラリーTopバナー</span>
+                                    </li>
+                                    <li className="flex items-center gap-3 text-sm text-gray-700">
+                                        <div className="bg-orange-200 p-0.5 rounded-full text-white"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                                        園からの感謝状掲示
+                                    </li>
+                                </ul>
+                                <button className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold hover:bg-orange hover:shadow-lg transition-all text-sm tracking-wide shadow-md">
+                                    このプランにする
                                 </button>
                             </div>
                         </FadeInSection>
 
-                        {/* ENTRY Plan */}
+                        {/* STANDARD */}
                         <FadeInSection delay={0.3}>
-                            <div className="bg-white rounded-3xl p-8 border-2 border-orange shadow-lg hover:shadow-2xl transition-all h-full flex flex-col relative transform md:-translate-y-4">
-                                <div className="absolute top-0 right-0 bg-orange text-white text-xs font-bold px-4 py-1 rounded-bl-xl rounded-tr-2xl">POPULAR</div>
-                                <div className="mb-4">
-                                    <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-bold tracking-wider">ENTRY</span>
-                                </div>
-                                <div className="mb-6">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-bold text-orange">10,000</span>
-                                        <span className="text-sm text-text/60">円 / 月</span>
-                                    </div>
-                                    <p className="text-sm text-text/60 mt-2">動画で魅力を伝える標準プラン</p>
-                                </div>
-                                <div className="space-y-4 mb-8 flex-1 border-t border-orange-100 pt-6">
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-orange"><PlayCircle className="w-4 h-4" /></div>
-                                        <span className="font-bold">15秒 動画広告</span>
-                                    </div>
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-orange"><Smartphone className="w-4 h-4" /></div>
-                                        <span className="font-bold">ギャラリーTopバナー</span>
-                                    </div>
-                                    <p className="text-xs text-text/60 pl-7">最もアクセス数の多いトップ画面でお知らせを配信。</p>
-                                </div>
-                                <button className="w-full py-3 rounded-xl bg-gradient-to-r from-orange to-orange-dark text-white font-bold hover:shadow-lg transition-all">
-                                    このプランで応援する
-                                </button>
-                            </div>
-                        </FadeInSection>
+                            <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-[2rem] p-8 border border-gray-700 h-full flex flex-col text-white relative overflow-hidden">
+                                <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
 
-                        {/* STANDARD Plan */}
-                        <FadeInSection delay={0.4}>
-                            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all h-full flex flex-col relative">
-                                <div className="mb-4">
-                                    <span className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold tracking-wider">STANDARD</span>
+                                <div className="mb-6 pb-6 border-b border-gray-700 relative z-10">
+                                    <p className="text-xs font-bold tracking-widest text-orange-300 mb-2 uppercase">Premium</p>
+                                    <h3 className="text-2xl font-bold text-white mb-1">Standard Plan</h3>
+                                    <p className="text-sm text-gray-400">ストーリーを深く届ける</p>
                                 </div>
-                                <div className="mb-6">
+                                <div className="mb-8 relative z-10">
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl font-bold text-text">30,000</span>
-                                        <span className="text-sm text-text/60">円 / 月</span>
+                                        <span className="text-4xl font-bold text-white tracking-tight">30,000</span>
+                                        <span className="text-sm text-gray-400">円 / 月</span>
                                     </div>
-                                    <p className="text-sm text-text/60 mt-2">ストーリーを深く届ける</p>
                                 </div>
-                                <div className="space-y-4 mb-8 flex-1 border-t border-gray-100 pt-6">
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-pink"><PlayCircle className="w-4 h-4" /></div>
-                                        <span className="font-bold">60秒 動画広告</span>
-                                    </div>
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-pink"><Smartphone className="w-4 h-4" /></div>
-                                        <span className="font-bold">ギャラリーTopバナー</span>
-                                    </div>
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <div className="mt-0.5 text-pink"><Star className="w-4 h-4" /></div>
-                                        <span className="font-bold">動画前後ロゴ表示</span>
-                                    </div>
-                                    <p className="text-xs text-text/60 pl-7">ブランド認知を最大化するフルセットプラン。</p>
-                                </div>
-                                <button className="w-full py-3 rounded-xl border-2 border-pink-200 text-pink-600 font-bold hover:bg-pink-50 transition-colors">
-                                    申し込む
+                                <ul className="space-y-4 mb-8 flex-1 relative z-10">
+                                    <li className="flex items-center gap-3 text-sm text-gray-200">
+                                        <Star className="w-5 h-5 text-orange-400 fill-orange-400" />
+                                        <span className="font-bold">60秒 動画広告</span> (Long)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-sm text-gray-300">
+                                        <CheckCircle2 className="w-5 h-5 text-gray-500" />
+                                        ギャラリーTopバナー
+                                    </li>
+                                    <li className="flex items-center gap-3 text-sm text-gray-300">
+                                        <CheckCircle2 className="w-5 h-5 text-gray-500" />
+                                        動画前後ロゴ表示
+                                    </li>
+                                    <li className="flex items-center gap-3 text-sm text-gray-300">
+                                        <CheckCircle2 className="w-5 h-5 text-gray-500" />
+                                        取材記事作成 (年1回)
+                                    </li>
+                                </ul>
+                                <button className="w-full py-4 rounded-xl border border-gray-600 text-white font-bold hover:bg-white hover:text-gray-900 transition-all text-sm tracking-wide relative z-10">
+                                    お問い合わせ
                                 </button>
                             </div>
                         </FadeInSection>
                     </div>
 
-                    {/* Login POP Option */}
-                    <FadeInSection delay={0.6}>
-                        <div className="max-w-4xl mx-auto bg-gradient-to-br from-indigo-900 to-slate-800 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-
-                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-16">
-                                <div className="flex-1 text-center md:text-left">
-                                    <div className="inline-block bg-yellow-400 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full mb-4">SPECIAL OPTION</div>
-                                    <h3 className="text-2xl md:text-3xl font-bold mb-4">ログイン時ポップアップ広告</h3>
-                                    <p className="text-indigo-100 mb-6 leading-relaxed">
-                                        アプリ起動時、ログイン直後の最も注目されるタイミングで全画面表示。<br />
-                                        期間限定のキャンペーンやイベント告知に絶大な効果を発揮します。
-                                    </p>
-                                    <div className="inline-flex items-end gap-2 mb-2">
-                                        <span className="text-4xl font-bold text-yellow-400">30,000</span>
-                                        <span className="text-sm opacity-80">円 / 期間 (1社独占)</span>
-                                    </div>
-                                    <p className="text-xs text-indigo-200">※通常プランと併用で <span className="text-white font-bold underline">20%OFF</span></p>
+                    {/* Special Option */}
+                    <FadeInSection delay={0.4}>
+                        <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-orange-100 flex flex-col md:flex-row items-center gap-10 max-w-5xl mx-auto">
+                            <div className="md:w-1/2">
+                                <div className="inline-block bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Limited Option</div>
+                                <h3 className="text-3xl font-bold text-gray-800 mb-4 font-zen-maru">ログイン時ポップアップ広告</h3>
+                                <p className="text-gray-500 leading-loose mb-8">
+                                    アプリ起動時、ログイン直後の最も注目されるタイミングで全画面表示。<br />
+                                    1社独占のプレミアム枠です。期間限定のキャンペーン告知に最適です。
+                                </p>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-3xl font-bold text-gray-900">30,000 <span className="text-sm font-normal text-gray-500">円 / 期間</span></div>
+                                    <div className="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-lg border border-red-100 font-bold">プラン併用で20%OFF</div>
                                 </div>
-                                <div className="w-full md:w-auto flex-shrink-0">
-                                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl w-64 mx-auto md:mx-0">
-                                        <div className="aspect-[3/4] bg-white rounded-lg flex items-center justify-center relative overflow-hidden">
-                                            <div className="absolute inset-x-4 inset-y-12 bg-gray-100 rounded flex flex-col items-center justify-center text-gray-400 text-center p-2">
-                                                <span className="font-bold text-gray-600 mb-2">Pop-up Area</span>
-                                                <ImageIcon />
-                                            </div>
-                                            <div className="absolute top-2 right-2 w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center text-[10px] text-gray-400">×</div>
-                                        </div>
-                                        <p className="text-center text-xs mt-3 opacity-60">表示イメージ</p>
+                            </div>
+                            <div className="md:w-1/2 w-full bg-gray-100 rounded-3xl h-64 flex items-center justify-center relative overflow-hidden group">
+                                {/* Abstract representation of Popup */}
+                                <div className="absolute inset-0 bg-gray-900/10"></div>
+                                <div className="bg-white p-6 rounded-xl shadow-lg w-48 text-center relative z-10 transform group-hover:scale-105 transition-transform duration-500">
+                                    <div className="w-full h-24 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                                        <Star className="w-8 h-8 text-orange-400" />
                                     </div>
+                                    <div className="h-2 w-3/4 bg-gray-100 rounded-full mx-auto mb-2"></div>
+                                    <div className="h-2 w-1/2 bg-gray-100 rounded-full mx-auto"></div>
                                 </div>
+                                <div className="absolute top-4 right-4 bg-white/50 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-gray-500">1社限定</div>
                             </div>
                         </div>
                     </FadeInSection>
@@ -382,153 +419,107 @@ export default function SponsorPage() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-orange-dark text-white py-12 relative z-10">
-                <div className="container mx-auto px-6 text-center">
-                    <div className="flex justify-center mb-8">
-                        <div className="bg-white p-4 rounded-3xl w-40">
-                            <Image src="/logo_sodachi.png" alt="そだちびより" width={200} height={100} className="w-full h-auto" />
+            <footer className="bg-gray-900 text-white py-16 relative z-10 border-t border-gray-800">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                        <div className="text-center md:text-left">
+                            <div className="w-32 bg-white p-3 rounded-2xl mb-6 mx-auto md:mx-0">
+                                <Image src="/logo_sodachi.png" alt="そだちびより" width={200} height={100} className="w-full h-auto" />
+                            </div>
+                            <p className="text-gray-400 text-sm">地域の未来を、手のひらから。</p>
+                        </div>
+                        <div className="flex gap-8 text-sm font-bold text-gray-400">
+                            <a href="#" className="hover:text-white transition-colors">利用規約</a>
+                            <a href="#" className="hover:text-white transition-colors">プライバシー</a>
+                            <a href="#" className="hover:text-white transition-colors">お問い合わせ</a>
                         </div>
                     </div>
-                    <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm opacity-90">
-                        <a href="#" className="hover:underline">運営会社</a>
-                        <a href="#" className="hover:underline">プライバシーポリシー</a>
-                        <a href="#" className="hover:underline">特定商取引法に基づく表記</a>
-                        <a href="#" className="hover:underline">お問い合わせ</a>
+                    <div className="border-t border-gray-800 pt-8 text-center md:text-left text-xs text-gray-600 flex flex-col md:flex-row justify-between">
+                        <p>&copy; 2026 Sodachi Biyori. All Rights Reserved.</p>
+                        <p>Designed for Community.</p>
                     </div>
-                    <p className="text-xs opacity-60">© 2026 Sodachibiyori. All Rights Reserved.</p>
                 </div>
             </footer>
         </div>
     );
 }
 
+// Mockup Component Logic
 const MockupScreenContent = () => {
     const [view, setView] = React.useState<'gallery' | 'player'>('gallery');
 
     React.useEffect(() => {
         const interval = setInterval(() => {
             setView(current => current === 'gallery' ? 'player' : 'gallery');
-        }, 4000); // Toggle every 4 seconds
+        }, 5000);
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <div className="w-full h-full relative bg-gray-50 overflow-hidden">
-            {/* Transition Wrapper */}
+        <div className="w-full h-full relative bg-gray-50 overflow-hidden font-sans">
             <motion.div
                 key={view}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.6 }}
                 className="w-full h-full absolute inset-0"
             >
                 {view === 'gallery' ? (
-                    // === GALLERY VIEW ===
                     <div className="flex flex-col h-full">
-                        {/* Header */}
-                        <div className="bg-orange p-4 pt-10 px-6 flex justify-between items-center text-white shadow-md z-10">
-                            <div className="font-bold text-lg">2026年1月</div>
-                            <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+                        {/* Gallery View */}
+                        <div className="bg-orange-500 p-6 pt-12 flex justify-between items-center text-white shadow-sm z-10">
+                            <span className="font-bold text-sm tracking-widest opacity-80">GALLERY</span>
+                            <div className="w-6 h-6 bg-white/20 rounded-full"></div>
                         </div>
-
-                        <div className="p-4 flex-1 overflow-hidden flex flex-col gap-4">
-                            {/* Top Banner (Entry/Standard) */}
-                            <motion.div
-                                initial={{ y: -20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="w-full h-24 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden group"
-                            >
-                                <div className="absolute top-2 right-2 text-[10px] bg-black/30 px-2 py-0.5 rounded-full">PR</div>
-                                <div className="text-center">
-                                    <p className="font-bold text-lg">春の体験教室 受付中！</p>
-                                    <p className="text-xs opacity-90">〇〇スイミングスクール</p>
+                        <div className="p-4 flex-1 overflow-hidden flex flex-col gap-4 bg-gray-50">
+                            {/* Banner */}
+                            <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white p-3 rounded-xl shadow-sm border border-orange-100 flex items-center gap-3">
+                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange"><Star className="w-5 h-5" /></div>
+                                <div>
+                                    <p className="text-[10px] text-orange font-bold uppercase">Sponsored</p>
+                                    <p className="text-xs font-bold text-gray-800">春のキャンペーン実施中</p>
                                 </div>
                             </motion.div>
 
-                            {/* Gallery Grid */}
-                            <p className="text-xs text-gray-400 font-bold mt-1">1月23日(金) お遊戯会練習</p>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
-                                </div>
-                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
-                                </div>
-                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
-                                </div>
-                                <div className="aspect-video bg-gray-200 rounded-lg relative overflow-hidden group">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400"><PlayCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /></div>
-                                </div>
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="aspect-square bg-white rounded-xl shadow-sm relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gray-100"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center text-gray-300"><PlayCircle className="w-8 h-8" /></div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Footer Banner */}
+                            <div className="mt-auto bg-gray-800 text-white p-3 rounded-xl flex items-center gap-3 shadow-lg">
+                                <div className="w-8 h-8 bg-gray-700 rounded-lg shrink-0"></div>
+                                <div className="h-2 w-20 bg-gray-600 rounded-full"></div>
                             </div>
                         </div>
-
-                        {/* Footer Banner (Mini) */}
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="mt-auto m-4 mb-8 bg-white border border-gray-200 rounded-lg flex items-center p-3 shadow-lg z-20"
-                        >
-                            <div className="w-8 h-8 bg-green-100 rounded mr-3 flex items-center justify-center"><Smartphone className="w-4 h-4 text-green" /></div>
-                            <div>
-                                <p className="text-[10px] text-gray-400">Sponsored</p>
-                                <p className="text-xs font-bold text-gray-700">安心安全な食材宅配なら〇〇</p>
-                            </div>
-                        </motion.div>
                     </div>
                 ) : (
-                    // === PLAYER VIEW (Preroll) ===
                     <div className="flex flex-col h-full bg-black text-white relative">
-                        {/* Video Content Placeholder */}
-                        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                            <PlayCircle className="w-20 h-20 text-white/10" />
+                        {/* Player View */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
+                            <PlayCircle className="w-16 h-16 text-white/5" />
                         </div>
-
-                        {/* Ad Overlay UI */}
-                        <div className="relative z-10 flex flex-col h-full justify-between p-6 pt-12 pb-12">
-                            {/* Top Bar */}
+                        <div className="relative z-10 p-6 pt-12 flex flex-col h-full justify-between">
                             <div className="flex justify-between items-start">
-                                <div className="bg-black/60 backdrop-blur px-3 py-1 rounded text-xs font-medium">
-                                    広告 • 0:15
-                                </div>
-                                <div className="bg-black/40 w-8 h-8 rounded-full flex items-center justify-center">
-                                    <div className="w-1 h-1 bg-white rounded-full box-content border-[3px] border-transparent border-t-white animate-spin"></div>
-                                </div>
+                                <span className="bg-black/50 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold border border-white/10">Ad 0:15</span>
+                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             </div>
-
-                            {/* Center Ad Content */}
                             <div className="text-center">
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="inline-block bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 mb-4"
-                                >
-                                    <h3 className="text-xl font-bold mb-2">CM動画 再生中</h3>
-                                    <p className="text-sm opacity-80">あなたの街のパン屋さん</p>
+                                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="inline-block">
+                                    <h4 className="text-xl font-bold mb-1">Local Bakery</h4>
+                                    <p className="text-xs text-gray-400">Produced by Sodachi</p>
                                 </motion.div>
                             </div>
-
-                            {/* Bottom CTA */}
-                            <div className="bg-white/10 backdrop-blur border border-white/10 p-4 rounded-xl flex items-center justify-between hover:bg-white/20 transition-colors cursor-pointer">
-                                <div>
-                                    <p className="text-xs text-yellow-400 font-bold mb-0.5">SPONSORED</p>
-                                    <p className="text-sm font-bold">詳しく見る</p>
-                                </div>
-                                <div className="bg-yellow-400 text-black p-1.5 rounded-full">
-                                    <MousePointerClick className="w-4 h-4" />
-                                </div>
+                            <div className="bg-white text-gray-900 p-3 rounded-xl flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors">
+                                <span className="text-xs font-bold">詳しく見る</span>
+                                <ChevronRight className="w-4 h-4" />
                             </div>
-
-                            {/* Preroll Indicator */}
-                            <div className="absolute bottom-1 left-0 w-full h-1 bg-gray-800">
-                                <motion.div
-                                    initial={{ width: "0%" }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ duration: 4, ease: "linear" }}
-                                    className="h-full bg-yellow-400"
-                                />
-                            </div>
+                            <div className="absolute bottom-0 left-0 h-1 bg-yellow-500 w-full animate-[width_4s_linear]"></div>
                         </div>
                     </div>
                 )}
@@ -536,10 +527,3 @@ const MockupScreenContent = () => {
         </div>
     );
 }
-
-const ImageIcon = () => (
-    <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-)
-
