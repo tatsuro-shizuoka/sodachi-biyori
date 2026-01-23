@@ -1,284 +1,343 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Heart, Users, BarChart3, ShieldCheck, Mail, ArrowRight, CheckCircle2, PlayCircle, MousePointer2 } from 'lucide-react'
-import { Button } from '@/app/components/ui/button'
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Heart, Sun, Sprout, Users, Video, Globe, HandHeart, Sparkles, Smartphone, CalendarHeart } from 'lucide-react';
 
-// Section Component
-const Section = ({ children, className = '', id = '' }: { children: React.ReactNode, className?: string, id?: string }) => (
-    <section id={id} className={`py-20 px-6 md:px-12 lg:px-24 print:py-8 print:px-8 ${className}`}>
-        <div className="max-w-6xl mx-auto">
-            {children}
-        </div>
-    </section>
-)
-
-export default function SponsorSalesPage() {
+const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans print:bg-white print:text-black">
-            {/* Header / Nav */}
-            <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md z-50 border-b border-slate-200 flex items-center justify-between px-6 print:hidden">
-                <div className="font-bold text-xl tracking-tighter text-indigo-600">Sodachi Biyori</div>
-                <nav className="hidden md:flex gap-6 text-sm font-medium text-slate-600">
-                    <a href="#challenge" className="hover:text-indigo-600 transition-colors">課題</a>
-                    <a href="#solution" className="hover:text-indigo-600 transition-colors">解決策</a>
-                    <a href="#value" className="hover:text-indigo-600 transition-colors">価値</a>
-                    <a href="#analytics" className="hover:text-indigo-600 transition-colors">透明性</a>
-                </nav>
-                <Button size="sm" onClick={() => window.location.href = "#contact"}>
-                    提携のお問い合わせ
-                </Button>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay, ease: "easeOut" }}
+        >
+            {children}
+        </motion.div>
+    );
+};
+
+export default function SponsorPage() {
+    return (
+        <div className="min-h-screen relative overflow-hidden text-text bg-cream">
+            {/* 背景装飾 */}
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+                <motion.div
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -top-20 -right-20 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-60"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 0] }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+                    className="absolute top-1/3 -left-20 w-72 h-72 bg-green-100 rounded-full blur-3xl opacity-60"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 3, 0] }}
+                    transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+                    className="absolute bottom-0 right-0 w-80 h-80 bg-pink-100 rounded-full blur-3xl opacity-40"
+                />
+            </div>
+
+            {/* ヘッダー */}
+            <header className="fixed top-0 w-full bg-cream/80 backdrop-blur-sm z-50 border-b border-orange-100">
+                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <div className="text-2xl font-bold text-orange tracking-widest flex items-center gap-2">
+                        <Sun className="w-8 h-8 text-orange" />
+                        育ち日和
+                    </div>
+                    <nav className="hidden md:flex gap-8 text-sm font-medium text-text/80">
+                        <a href="#concept" className="hover:text-orange transition-colors">想い</a>
+                        <a href="#service" className="hover:text-orange transition-colors">サービス</a>
+                        <a href="#pricing" className="hover:text-orange transition-colors">応援プラン</a>
+                        <a href="#contact" className="px-4 py-2 bg-orange text-white rounded-full hover:bg-orange-dark transition-colors">お問い合わせ</a>
+                    </nav>
+                </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white print:h-auto print:py-20 print:bg-none print:text-black">
-                {/* Background Shapes */}
-                <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/20 blur-3xl animate-pulse print:hidden" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-pink-600/20 blur-3xl animate-pulse delay-1000 print:hidden" />
-
-                <div className="relative z-10 max-w-5xl mx-auto px-6 text-center space-y-8">
+            {/* メインビジュアル (Hero) */}
+            <section className="pt-32 pb-20 md:pt-48 md:pb-32 px-6 relative z-10">
+                <div className="container mx-auto text-center max-w-4xl">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="mb-8 flex justify-center"
                     >
-                        <h2 className="text-xl md:text-2xl font-medium text-pink-300 tracking-wide mb-4 print:text-slate-600">
-                            PARTNERSHIP PROPOSAL
-                        </h2>
-                        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6">
-                            It takes a village<br />
-                            to raise a child.
-                        </h1>
-                        <p className="text-lg md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed print:text-slate-600">
-                            「一人の子どもを育てるには村が必要だ」<br />
-                            失われた地域の繋がりを、テクノロジーで再定義する。<br />
-                            私たちと一緒に、新しい「村」をつくりませんか。
-                        </p>
+                        <div className="relative">
+                            <span className="absolute -top-6 -right-6 text-4xl animate-bounce">🌱</span>
+                            <Smartphone className="w-24 h-24 text-orange md:w-32 md:h-32" strokeWidth={1.5} />
+                        </div>
                     </motion.div>
 
-                    <motion.div
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 tracking-wide"
+                    >
+                        <span className="text-orange block text-xl md:text-2xl mb-4 font-normal">今まで見れなかった瞬間を</span>
+                        見逃してきた成長を<br className="md:hidden" />手のひらに。
+                    </motion.h1>
+
+                    <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 0.8, duration: 0.8 }}
-                        className="print:hidden"
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="text-base md:text-lg text-text/80 mb-10 leading-relaxed max-w-2xl mx-auto"
                     >
-                        <Button size="lg" className="bg-white text-indigo-900 hover:bg-slate-100 rounded-full px-8 py-6 text-lg font-bold">
-                            ストーリーを見る <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
+                        保育園・幼稚園での、かけがえのない瞬間。<br />
+                        スマホの中に届けることで、<br className="md:hidden" />家族の会話がもっと温かくなります。
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.6 }}
+                    >
+                        <button className="bg-gradient-to-r from-orange to-orange-dark text-white text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto">
+                            <Heart className="w-5 h-5" fill="currentColor" />
+                            今すぐ始める
+                        </button>
                     </motion.div>
                 </div>
             </section>
 
-            {/* The Challenge */}
-            <Section id="challenge" className="bg-white">
-                <div className="grid md:grid-cols-2 gap-16 items-center">
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-sm font-bold print:border print:border-red-200">
-                            <ShieldCheck className="h-4 w-4" /> THE CHALLENGE
-                        </div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                            現代の子育ては、<br />あまりに「孤独」だ。
-                        </h2>
-                        <p className="text-lg text-slate-600 leading-relaxed">
-                            核家族化が進み、地域のコミュニティが希薄になった現代。<br />
-                            保護者は仕事と育児の両立に追われ、保育士は過重な業務負担で日々の子供の成長を記録することすら困難です。
-                        </p>
-                        <ul className="space-y-4 pt-4">
-                            {[
-                                "「今日どうだった？」の会話が生まれない",
-                                "保育の様子が見えず、預けることへの罪悪感",
-                                "地域社会との接点がなく、孤立する親子"
-                            ].map((item, i) => (
-                                <li key={i} className="flex items-start gap-3 text-slate-700">
-                                    <CheckCircle2 className="h-6 w-6 text-red-500 shrink-0" />
-                                    <span className="text-lg">{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="relative h-[400px] bg-slate-100 rounded-2xl overflow-hidden shadow-xl print:border print:border-slate-200">
-                        {/* Placeholder for Challenge Image */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-slate-200 text-slate-400">
-                            <span className="text-lg font-medium">Image: Busy Parents & Isolated Childcare</span>
-                        </div>
-                    </div>
-                </div>
-            </Section>
-
-            {/* The Solution */}
-            <Section id="solution" className="bg-indigo-50/50 print:bg-white">
-                <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold mb-4 print:border print:border-indigo-200">
-                        <Heart className="h-4 w-4" /> THE SOLUTION
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                        「見守る」を「感動」へ。<br />テクノロジーが繋ぐ、新しい絆。
-                    </h2>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                        Sodachi Biyori は、AIと顔認証技術を活用し、園で撮影された膨大な動画から「わが子の笑顔」だけを瞬時に届けます。
-                    </p>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-8">
-                    {[
-                        {
-                            title: "AI Auto-Editing",
-                            desc: "顔認証AIが、数時間の動画からお子様が映っているシーンだけを自動抽出。探す手間ゼロで、感動に出会えます。",
-                            icon: PlayCircle
-                        },
-                        {
-                            title: "Family Connection",
-                            desc: "「今日こんなことしてたね」アプリの通知が、帰宅後の親子の会話のきっかけを生み出します。",
-                            icon: Users
-                        },
-                        {
-                            title: "Sustainable Care",
-                            desc: "保育士の記録業務を自動化し、子どもと向き合う時間を創出。園の運営もサポートします。",
-                            icon: ShieldCheck
-                        }
-                    ].map((feature, i) => (
-                        <div key={i} className="bg-white p-8 rounded-xl shadow-lg border border-slate-100 print:shadow-none print:border-slate-300">
-                            <div className="h-12 w-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6 text-indigo-600">
-                                <feature.icon className="h-6 w-6" />
+            {/* 私たちの想い (Concept) */}
+            <section id="concept" className="py-20 bg-white/50 relative z-10">
+                <div className="container mx-auto px-6">
+                    <div className="max-w-3xl mx-auto text-center">
+                        <FadeInSection>
+                            <div className="flex justify-center mb-6">
+                                <Sprout className="w-12 h-12 text-green" />
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-slate-900">{feature.title}</h3>
-                            <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* Sponsor's Value */}
-            <Section id="value" className="bg-white">
-                <div className="grid md:grid-cols-2 gap-16 items-center">
-                    <div className="order-2 md:order-1 relative h-[400px] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl print:border print:border-slate-200">
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center bg-gradient-to-t from-black/80 to-transparent">
-                            <div className="w-full h-full absolute inset-0 bg-slate-800 opacity-50" /> {/* Placeholder BG */}
-                            <span className="relative z-10 text-2xl font-bold">Ad integrates seamlessly<br />with emotional moments</span>
-                        </div>
-                    </div>
-                    <div className="order-1 md:order-2 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-sm font-bold print:border print:border-orange-200">
-                            <Users className="h-4 w-4" /> PARTNERSHIP VALUE
-                        </div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                            最もポジティブな瞬間に、<br />ブランドが寄り添う。
-                        </h2>
-                        <p className="text-lg text-slate-600 leading-relaxed">
-                            保護者がアプリを開くのは、「わが子の成長を見たい」という最も幸福で、心が動く瞬間です。<br />
-                            御社のブランドメッセージは、単なる広告としてではなく、子育てを応援する「サポーター」として深く認知されます。
-                        </p>
-                        <div className="grid grid-cols-2 gap-6 pt-4">
-                            <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
-                                <div className="text-3xl font-bold text-orange-600 mb-1">High CTR</div>
-                                <div className="text-sm text-slate-600">感動体験とのセットで<br />高いエンゲージメント</div>
+                            <h2 className="text-2xl md:text-3xl font-bold mb-8 text-orange-dark">
+                                昨日話せなかったことが、<br />今日話せるようになる。
+                            </h2>
+                            <div className="space-y-6 text-lg leading-loose text-text/90 font-medium">
+                                <p>
+                                    「今日は何したの？」<br />
+                                    「わかんない」「忘れた」
+                                </p>
+                                <p>
+                                    そんな会話が、<br />
+                                    「見て！今日こんなことできたよ！」<br />
+                                    に変わります。
+                                </p>
+                                <p>
+                                    一昨日できなかったことが、明日できるようになる。<br />
+                                    その成長のスピードは、本当にあっという間です。
+                                </p>
+                                <p className="pt-4 text-xl text-orange-dark font-bold">
+                                    預けている間の成長の一瞬を、<br />
+                                    少しでも届けたい。
+                                </p>
+                                <p>
+                                    それが「育ち日和」の願いです。
+                                </p>
                             </div>
-                            <div className="p-4 bg-pink-50 rounded-lg border border-pink-100">
-                                <div className="text-3xl font-bold text-pink-600 mb-1">Targeting</div>
-                                <div className="text-sm text-slate-600">地域・年齢・関心で<br />精緻なターゲティング</div>
-                            </div>
-                        </div>
+                        </FadeInSection>
                     </div>
                 </div>
-            </Section>
+            </section>
 
-            {/* Analytics Demo (Tech Evidence) */}
-            <Section id="analytics" className="bg-slate-900 text-white print:bg-white print:text-black">
-                <div className="max-w-4xl mx-auto text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold mb-4 border border-indigo-500/30 print:text-indigo-700 print:bg-indigo-50">
-                        <BarChart3 className="h-4 w-4" /> EVIDENCE & TRANSPARENCY
-                    </div>
-                    <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                        「支援」の効果を、数字で実感。
-                    </h2>
-                    <p className="text-xl text-slate-400 max-w-2xl mx-auto print:text-slate-600">
-                        Google Analyticsレベルの精緻な分析ダッシュボードを提供。<br />
-                        表示回数だけでなく、CTAクリック、動画再生完了数など、具体的なアクションを可視化します。
-                    </p>
-                </div>
-
-                {/* Mockup Dashboard UI */}
-                <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 print:bg-white print:border-slate-300">
-                    <div className="h-8 bg-slate-900 border-b border-slate-700 flex items-center px-4 gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                        <div className="w-3 h-3 rounded-full bg-green-500" />
-                    </div>
-                    <div className="p-8 grid gap-8">
-                        {/* Summary Row */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { label: "Total Impressions", value: "128,400", sub: "+12% vs last month" },
-                                { label: "Total Clicks", value: "3,840", sub: "CTR 2.9%" },
-                                { label: "Video Completions", value: "85%", sub: "High Engagement" },
-                                { label: "Local Reach", value: "Tokyo, Setagaya", sub: "Top Area" },
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-slate-700/50 p-4 rounded-lg border border-slate-600 print:bg-slate-50 print:border-slate-200">
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">{stat.label}</div>
-                                    <div className="text-2xl font-bold text-white print:text-slate-900">{stat.value}</div>
-                                    <div className="text-xs text-emerald-400 mt-1">{stat.sub}</div>
+            {/* スポンサー様へ (Message) */}
+            <section className="py-20 bg-orange-50/50 relative z-10">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center gap-12 max-w-5xl mx-auto">
+                        <div className="w-full md:w-1/2">
+                            <FadeInSection>
+                                <div className="bg-white p-8 rounded-2xl shadow-sm border border-orange-100 relative">
+                                    <div className="absolute -top-4 -left-4 bg-orange text-white px-4 py-1 rounded-full text-sm font-bold">田中 達郎 様へ</div>
+                                    <h3 className="text-2xl font-bold mb-4 text-text mt-2">地域の子供たちを<br />一緒に見守りませんか？</h3>
+                                    <p className="leading-relaxed mb-4">
+                                        私たちは、保護者の方々が安心して子育てできる環境を作りたいと考えています。
+                                        しかし、サービスの運営には地域の皆様のご協力が不可欠です。
+                                    </p>
+                                    <p className="leading-relaxed text-orange-dark font-bold">
+                                        あなたのお店や活動を、<br />
+                                        子育て世代のパパ・ママに伝えながら、<br />
+                                        子供たちの未来を応援していただけませんか？
+                                    </p>
                                 </div>
-                            ))}
+                            </FadeInSection>
                         </div>
-                        {/* Event Table Mock */}
-                        <div className="bg-slate-700/30 rounded-lg border border-slate-600 p-6 print:bg-slate-50 print:border-slate-200">
-                            <h4 className="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2 print:text-slate-700">
-                                <MousePointer2 className="h-4 w-4" /> User Interaction Breakdown
-                            </h4>
-                            <div className="space-y-3">
-                                {[
-                                    { label: "Banner Display (Home)", count: 45000, bar: "100%" },
-                                    { label: "Video Ad Play (Preroll)", count: 32000, bar: "70%" },
-                                    { label: "CTA Click (Website)", count: 1200, bar: "15%" },
-                                    { label: "Video Completed", count: 28000, bar: "60%" },
-                                ].map((row, i) => (
-                                    <div key={i} className="flex items-center gap-4 text-sm">
-                                        <div className="w-48 text-slate-300 print:text-slate-700">{row.label}</div>
-                                        <div className="flex-1 h-2 bg-slate-600 rounded-full overflow-hidden print:bg-slate-200">
-                                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: row.bar }} />
-                                        </div>
-                                        <div className="w-16 text-right font-mono text-white print:text-slate-900">{row.count.toLocaleString()}</div>
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="w-full md:w-1/2 grid grid-cols-2 gap-4">
+                            <FadeInSection delay={0.2}>
+                                <div className="bg-white p-6 rounded-xl shadow-sm text-center transform hover:-translate-y-1 transition-transform">
+                                    <Users className="w-10 h-10 text-orange mx-auto mb-3" />
+                                    <h4 className="font-bold text-sm">地域密着</h4>
+                                    <p className="text-xs text-text/60 mt-2">地域の方々に確実に届きます</p>
+                                </div>
+                            </FadeInSection>
+                            <FadeInSection delay={0.3}>
+                                <div className="bg-white p-6 rounded-xl shadow-sm text-center transform hover:-translate-y-1 transition-transform">
+                                    <HandHeart className="w-10 h-10 text-pink mx-auto mb-3" />
+                                    <h4 className="font-bold text-sm">信頼向上</h4>
+                                    <p className="text-xs text-text/60 mt-2">子育て応援企業としてPR</p>
+                                </div>
+                            </FadeInSection>
+                            <FadeInSection delay={0.4}>
+                                <div className="bg-white p-6 rounded-xl shadow-sm text-center transform hover:-translate-y-1 transition-transform">
+                                    <Video className="w-10 h-10 text-green mx-auto mb-3" />
+                                    <h4 className="font-bold text-sm">動画で伝達</h4>
+                                    <p className="text-xs text-text/60 mt-2">空気感までしっかり伝わる</p>
+                                </div>
+                            </FadeInSection>
+                            <FadeInSection delay={0.5}>
+                                <div className="bg-white p-6 rounded-xl shadow-sm text-center transform hover:-translate-y-1 transition-transform">
+                                    <Sparkles className="w-10 h-10 text-orange-light mx-auto mb-3" />
+                                    <h4 className="font-bold text-sm">簡単開始</h4>
+                                    <p className="text-xs text-text/60 mt-2">少額から手軽に応援可能</p>
+                                </div>
+                            </FadeInSection>
                         </div>
                     </div>
                 </div>
-            </Section>
+            </section>
 
-            {/* CTA / Contact */}
-            <Section id="contact" className="bg-indigo-600 text-white text-center py-32 print:bg-white print:text-black print:py-16">
-                <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
-                    Join the Village.
-                </h2>
-                <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-12 print:text-slate-600">
-                    地域の子どもたちの未来を、貴社のブランドと共に。<br />
-                    詳細なプランや導入事例については、お気軽にお問い合わせください。
-                </p>
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 print:hidden">
-                    <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50 h-14 px-10 text-lg rounded-full shadow-xl">
-                        資料をダウンロード (PDF) <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                    <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 h-14 px-10 text-lg rounded-full">
-                        <Mail className="mr-2 h-5 w-5" /> お問い合わせ
-                    </Button>
-                </div>
-                {/* Print Only Contact Info */}
-                <div className="hidden print:block text-center mt-8 p-8 border border-slate-300 rounded-xl">
-                    <p className="font-bold text-xl mb-4">お問い合わせ先</p>
-                    <p>株式会社Sodachi Biyori</p>
-                    <p>Email: contact@sodachi-biyori.com</p>
-                    <p>Web: https://sodachi-biyori.com/partner</p>
-                </div>
-            </Section>
+            {/* 応援プラン (Pricing) */}
+            <section id="pricing" className="py-24 relative z-10">
+                <div className="container mx-auto px-6">
+                    <FadeInSection>
+                        <div className="text-center mb-16">
+                            <span className="text-orange font-bold tracking-widest uppercase">Pricing Plans</span>
+                            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">地域応援プラン</h2>
+                            <p className="text-text/70">ご予算や目的に合わせて、3つの応援スタイルをご用意しました。</p>
+                        </div>
+                    </FadeInSection>
 
-            {/* Footer */}
-            <footer className="bg-slate-900 text-slate-400 py-12 px-6 text-center text-sm print:hidden">
-                <p>&copy; {new Date().getFullYear()} Sodachi Biyori. All rights reserved.</p>
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        {/* Plan A */}
+                        <FadeInSection delay={0.2}>
+                            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg hover:shadow-xl transition-all h-full flex flex-col relative overflow-hidden group">
+                                <div className="absolute top-0 left-0 w-full h-2 bg-green-light"></div>
+                                <div className="mb-6">
+                                    <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mb-4 text-green-600">
+                                        <Smartphone className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">お試し・スポット応援</h3>
+                                    <p className="text-sm text-text/60">まずは気軽に試してみたい方へ</p>
+                                </div>
+                                <div className="mb-6">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-bold text-text">5,000</span>
+                                        <span className="text-sm text-text/60">円 / 回</span>
+                                    </div>
+                                    <p className="text-xs text-orange mt-1">※期間限定掲載も可能</p>
+                                </div>
+                                <ul className="space-y-4 mb-8 flex-1">
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-green-100 p-1 rounded-full"><Sparkles className="w-3 h-3 text-green-600" /></div>
+                                        <span>「ふっただけ」でパッと表示</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-green-100 p-1 rounded-full"><Sparkles className="w-3 h-3 text-green-600" /></div>
+                                        <span>イベント告知に最適</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-green-100 p-1 rounded-full"><Sparkles className="w-3 h-3 text-green-600" /></div>
+                                        <span>確実なインプレッション</span>
+                                    </li>
+                                </ul>
+                                <button className="w-full py-3 rounded-xl border-2 border-green text-green font-bold hover:bg-green hover:text-white transition-colors">
+                                    これにする
+                                </button>
+                            </div>
+                        </FadeInSection>
+
+                        {/* Plan B (Recommended) */}
+                        <FadeInSection delay={0.3}>
+                            <div className="bg-white rounded-3xl p-8 border-2 border-orange shadow-xl hover:shadow-2xl transition-all h-full flex flex-col relative overflow-hidden transform md:-translate-y-4">
+                                <div className="absolute top-0 right-0 bg-orange text-white text-xs font-bold px-4 py-1 rounded-bl-xl">おすすめ</div>
+                                <div className="mb-6">
+                                    <div className="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center mb-4 text-orange">
+                                        <CalendarHeart className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">しっかり常設応援</h3>
+                                    <p className="text-sm text-text/60">地域に根差したPRをしたい方へ</p>
+                                </div>
+                                <div className="mb-6">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-4xl font-bold text-orange">10,000</span>
+                                        <span className="text-sm text-text/60">円 / 月</span>
+                                    </div>
+                                </div>
+                                <ul className="space-y-4 mb-8 flex-1">
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-orange-100 p-1 rounded-full"><Heart className="w-3 h-3 text-orange" /></div>
+                                        <span className="font-bold">確実に目に入る配置</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-orange-100 p-1 rounded-full"><Heart className="w-3 h-3 text-orange" /></div>
+                                        <span>毎日の継続的な認知獲得</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-orange-100 p-1 rounded-full"><Heart className="w-3 h-3 text-orange" /></div>
+                                        <span>保護者からの信頼度UP</span>
+                                    </li>
+                                </ul>
+                                <button className="w-full py-3 rounded-xl bg-orange text-white font-bold hover:bg-orange-dark transition-colors shadow-lg">
+                                    応援する（基本プラン）
+                                </button>
+                            </div>
+                        </FadeInSection>
+
+                        {/* Plan C */}
+                        <FadeInSection delay={0.4}>
+                            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg hover:shadow-xl transition-all h-full flex flex-col relative overflow-hidden group">
+                                <div className="absolute top-0 left-0 w-full h-2 bg-pink"></div>
+                                <div className="mb-6">
+                                    <div className="bg-pink/20 w-12 h-12 rounded-full flex items-center justify-center mb-4 text-pink">
+                                        <Video className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">動画で想い伝え</h3>
+                                    <p className="text-sm text-text/60">想いをしっかり届けたい方へ</p>
+                                </div>
+                                <div className="mb-6">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-bold text-text">30,000</span>
+                                        <span className="text-sm text-text/60">円 / 月</span>
+                                    </div>
+                                </div>
+                                <ul className="space-y-4 mb-8 flex-1">
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-pink/20 p-1 rounded-full"><Globe className="w-3 h-3 text-pink" /></div>
+                                        <span className="font-bold">60秒の動画広告</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-pink/20 p-1 rounded-full"><Globe className="w-3 h-3 text-pink" /></div>
+                                        <span>スキップ停止時間応相談</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 text-sm">
+                                        <div className="mt-1 bg-pink/20 p-1 rounded-full"><Globe className="w-3 h-3 text-pink" /></div>
+                                        <span>ストーリーごと伝える</span>
+                                    </li>
+                                </ul>
+                                <button className="w-full py-3 rounded-xl border-2 border-pink text-pink font-bold hover:bg-pink hover:text-white transition-colors">
+                                    詳しく相談する
+                                </button>
+                            </div>
+                        </FadeInSection>
+                    </div>
+                </div>
+            </section>
+
+            {/* フッター */}
+            <footer className="bg-orange-dark text-white py-12 relative z-10">
+                <div className="container mx-auto px-6 text-center">
+                    <h2 className="text-2xl font-bold mb-8 flex justify-center items-center gap-2">
+                        <Sun className="w-6 h-6" /> 育ち日和
+                    </h2>
+                    <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm opacity-90">
+                        <a href="#" className="hover:underline">運営会社</a>
+                        <a href="#" className="hover:underline">プライバシーポリシー</a>
+                        <a href="#" className="hover:underline">特定商取引法に基づく表記</a>
+                        <a href="#" className="hover:underline">お問い合わせ</a>
+                    </div>
+                    <p className="text-xs opacity-60">© 2026 Sodachibiyori. All Rights Reserved.</p>
+                </div>
             </footer>
         </div>
-    )
+    );
 }

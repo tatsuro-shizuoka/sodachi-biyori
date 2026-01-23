@@ -52,6 +52,19 @@ const config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                // Custom LP Colors
+                cream: '#FFFDF5',
+                orange: {
+                    DEFAULT: '#FFB74D',
+                    light: '#FFD180',
+                    dark: '#F57C00',
+                },
+                green: {
+                    light: '#DAF7A6',
+                    DEFAULT: '#AED581',
+                },
+                pink: '#FFD180', // Warm pink/orange accent
+                text: '#4A4A4A',
             },
             borderRadius: {
                 lg: "var(--radius)",
