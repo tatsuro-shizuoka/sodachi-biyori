@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { PlayCircle, ChevronRight, Check, X, MapPin, Play, Heart, Users } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence, useSpring } from 'framer-motion';
+import { PlayCircle, ChevronRight, Check, X, MapPin, Play, Heart, Users, Star } from 'lucide-react';
 
 // --- Components ---
 
@@ -14,7 +14,7 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.8, delay, ease: [0.25, 0.46, 0.45, 0.94] }} // Softer ease
+            transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
             className={className}
         >
             {children}
@@ -22,18 +22,36 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
     );
 };
 
+const ScaleIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay, ease: "easeOut" }}
+            className={className}
+        >
+            {children}
+        </motion.div>
+    )
+}
+
 const PhoneMockup = () => {
-    const [view, setView] = useState<'gallery' | 'player'>('gallery');
+    const [view, setView] = useState<'gallery' | 'player' | 'pop'>('gallery');
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setView(prev => prev === 'gallery' ? 'player' : 'gallery');
-        }, 4000);
+            setView(prev => {
+                if (prev === 'gallery') return 'player';
+                if (prev === 'player') return 'pop';
+                return 'gallery';
+            });
+        }, 3500); // Slightly faster cycle
         return () => clearInterval(timer);
     }, []);
 
     return (
-        <div className="relative w-[280px] h-[580px] bg-black rounded-[40px] border-[8px] border-gray-900 shadow-2xl overflow-hidden mx-auto ring-4 ring-orange-100/50">
+        <div className="relative w-[280px] h-[580px] bg-black rounded-[40px] border-[8px] border-gray-900 shadow-2xl overflow-hidden mx-auto ring-4 ring-orange-200/50">
             {/* Dynamic Island */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-xl z-50"></div>
 
@@ -84,7 +102,7 @@ const PhoneMockup = () => {
                                 </div>
                             </div>
                         </motion.div>
-                    ) : (
+                    ) : view === 'player' ? (
                         <motion.div
                             key="player"
                             initial={{ opacity: 0 }}
@@ -96,10 +114,10 @@ const PhoneMockup = () => {
                             <div className="absolute inset-0 z-10 flex flex-col justify-between p-4 pt-12 pb-8">
                                 <div className="flex justify-between items-start text-white">
                                     <div className="bg-black/50 px-2 py-1 rounded-full text-[10px] backdrop-blur-sm">
-                                        広告・0:15
+                                        広告・0:05
                                     </div>
                                     <div className="bg-black/50 px-2 py-1 rounded-full text-[10px] flex items-center gap-1 backdrop-blur-sm">
-                                        スタンダードプラン <ChevronRight className="w-3 h-3" />
+                                        動画広告 <ChevronRight className="w-3 h-3" />
                                     </div>
                                 </div>
                                 <div className="bg-white/95 p-3 rounded-xl shadow-lg mx-4 text-center backdrop-blur-md">
@@ -112,7 +130,46 @@ const PhoneMockup = () => {
 
                             <div className="text-white text-center opacity-50">
                                 <PlayCircle className="w-16 h-16 mx-auto mb-2 text-white/80" />
-                                <p className="text-xs">Video Ad Playing...</p>
+                                <p className="text-xs">CM再生中...</p>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="pop"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="h-full relative flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+                        >
+                            {/* Background imitating app */}
+                            <div className="absolute inset-0 bg-white -z-10">
+                                <div className="w-full h-full opacity-10 flex items-center justify-center">
+                                    <Image src="/logo_sodachi.png" alt="" width={100} height={50} className="grayscale" />
+                                </div>
+                            </div>
+
+                            {/* POP Modal */}
+                            <div className="bg-white rounded-2xl p-4 shadow-2xl relative w-full aspect-[4/5] flex flex-col justify-center items-center text-center space-y-4 border-2 border-orange-100">
+                                <div className="absolute -top-3 -right-3 bg-white rounded-full p-1 shadow-md border border-gray-100">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </div>
+
+                                <div className="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded">
+                                    あなたへのお知らせ
+                                </div>
+
+                                <h4 className="text-lg font-bold text-gray-800 font-zen-maru">
+                                    春の体験レッスン<br />
+                                    受付スタート！
+                                </h4>
+
+                                <div className="w-full h-24 bg-orange-50 rounded-lg flex items-center justify-center">
+                                    <Image src="/logo_sodachi.png" alt="Logo" width={60} height={30} className="opacity-50" />
+                                </div>
+
+                                <button className="w-full py-2 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-200">
+                                    詳細をチェック
+                                </button>
                             </div>
                         </motion.div>
                     )}
@@ -130,7 +187,15 @@ export default function SponsorPage() {
     const headerBackdrop = useTransform(scrollY, [0, 50], ["rgba(255,253,245,0)", "rgba(255,253,245,0.9)"]);
 
     return (
-        <div className="min-h-screen bg-cream text-text font-sans selection:bg-orange-200 selection:text-orange-900 pb-32">
+        <div className="min-h-screen bg-cream text-text font-sans selection:bg-orange-200 selection:text-orange-900 pb-32 overflow-hidden">
+
+            {/* Background Pattern (Logos) */}
+            <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0 overflow-hidden">
+                <div className="absolute top-20 left-10 transform -rotate-12"><Image src="/logo_sodachi.png" alt="" width={200} height={100} /></div>
+                <div className="absolute top-1/4 right-0 transform rotate-45"><Image src="/logo_sodachi.png" alt="" width={300} height={150} /></div>
+                <div className="absolute bottom-1/3 left-[-50px] transform -rotate-15"><Image src="/logo_sodachi.png" alt="" width={250} height={125} /></div>
+                <div className="absolute bottom-10 right-10 transform rotate-6"><Image src="/logo_sodachi.png" alt="" width={150} height={75} /></div>
+            </div>
 
             {/* Navigation (Soft & Warm) */}
             <motion.header
@@ -144,16 +209,16 @@ export default function SponsorPage() {
                     <nav className="flex items-center gap-6 text-sm text-gray-600 font-medium">
                         <a href="#concept" className="hover:text-orange-500 transition-colors hidden md:inline-block font-zen-maru font-bold">想い</a>
                         <a href="#features" className="hover:text-orange-500 transition-colors hidden md:inline-block font-zen-maru font-bold">特長</a>
-                        <a href="#pricing" className="bg-orange-400 text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-orange-500 transition-colors shadow-lg shadow-orange-200">お問い合わせ</a>
+                        <a href="#pricing" className="bg-orange-400 text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-orange-500 transition-colors shadow-lg shadow-orange-200 hover:shadow-orange-300 transform hover:scale-105 duration-300">お問い合わせ</a>
                     </nav>
                 </div>
             </motion.header>
 
             {/* Hero Section */}
-            <section className="pt-32 pb-16 md:pt-44 md:pb-24 px-6 text-center">
+            <section className="pt-32 pb-16 md:pt-44 md:pb-24 px-6 text-center relative z-10">
                 <div className="max-w-[980px] mx-auto">
-                    <FadeIn>
-                        <div className="text-sm md:text-base font-bold text-orange-500 mb-4 tracking-wider font-zen-maru">
+                    <ScaleIn>
+                        <div className="text-sm md:text-base font-bold text-orange-500 mb-4 tracking-wider font-zen-maru bg-orange-50 inline-block px-4 py-1 rounded-full border border-orange-100">
                             地域共創パートナープログラム
                         </div>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.2] tracking-tight mb-8 font-zen-maru text-gray-800">
@@ -162,29 +227,29 @@ export default function SponsorPage() {
                         </h1>
                         <p className="text-lg md:text-2xl leading-relaxed font-normal text-gray-600 max-w-2xl mx-auto mb-12">
                             園でのかけがえのない瞬間を保護者に届ける。<br />
-                            その物語を、<span className="text-orange-500 font-bold">地域の応援</span>で支えませんか。
+                            その物語を、<span className="text-orange-500 font-bold bg-orange-100/50 px-1">地域の応援</span>で支えませんか。
                         </p>
                         <div className="flex gap-4 justify-center items-center">
-                            <button className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-base font-bold px-8 py-3.5 rounded-full hover:shadow-orange-200/50 hover:scale-105 transition-all flex items-center gap-1 shadow-xl shadow-orange-500/20">
+                            <button className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-base font-bold px-8 py-3.5 rounded-full hover:shadow-orange-300/50 hover:scale-105 transition-all flex items-center gap-1 shadow-xl shadow-orange-500/20">
                                 スポンサーに申し込む <ChevronRight className="w-4 h-4 ml-1" />
                             </button>
                             <button className="text-gray-500 hover:text-orange-500 hover:bg-orange-50 px-6 py-3 rounded-full transition-all text-base font-medium flex items-center gap-1">
                                 資料ダウンロード <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
-                    </FadeIn>
+                    </ScaleIn>
                 </div>
             </section>
 
-            {/* Hero Image - Softer Corners */}
-            <section className="px-4 md:px-6 mb-32">
+            {/* Hero Image - Softer Corners & Parallax Feel */}
+            <section className="px-4 md:px-6 mb-32 relative z-10">
                 <FadeIn delay={0.2}>
-                    <div className="max-w-[1200px] mx-auto rounded-[3rem] overflow-hidden shadow-2xl relative aspect-[16/9] md:aspect-[21/9] ring-8 ring-white/50">
+                    <div className="max-w-[1200px] mx-auto rounded-[3rem] overflow-hidden shadow-2xl relative aspect-[16/9] md:aspect-[21/9] ring-8 ring-white/50 group">
                         <Image
                             src="/img_playground.png"
                             alt="園庭で遊ぶ子供たち"
                             fill
-                            className="object-cover"
+                            className="object-cover transition-transform duration-[2s] group-hover:scale-105"
                             priority
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
@@ -196,11 +261,11 @@ export default function SponsorPage() {
             </section>
 
             {/* Concept Section - Warmth Emphasis */}
-            <section id="concept" className="py-24 relative overflow-hidden">
+            <section id="concept" className="py-24 relative overflow-hidden z-10">
                 {/* Background decoration */}
                 <div className="absolute top-0 left-0 w-full h-full bg-[#FFF8E1] opacity-50 -z-10"></div>
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200 rounded-full blur-3xl opacity-20"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-green-200 rounded-full blur-3xl opacity-20"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-green-200 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: "2s" }}></div>
 
                 <div className="max-w-[980px] mx-auto px-6 text-center">
                     <FadeIn>
@@ -218,9 +283,12 @@ export default function SponsorPage() {
                                     しかし、その瞬間を記録し届けるためには、<br />
                                     システムを支え、見守る<span className="text-orange-500 font-bold">地域のサポーター</span>が必要です。
                                 </p>
-                                <div className="p-6 bg-white rounded-2xl shadow-sm border border-orange-100 relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
-                                    <p className="text-xl leading-relaxed text-gray-800 font-bold font-zen-maru">
+                                <div className="p-8 bg-white/80 backdrop-blur-sm rounded-[30px] shadow-sm border border-orange-100 relative overflow-hidden group hover:shadow-lg transition-shadow">
+                                    <div className="absolute top-0 left-0 w-2 h-full bg-orange-400"></div>
+                                    <div className="absolute -right-4 -bottom-4 opacity-10 transform rotate-12">
+                                        <Image src="/logo_sodachi.png" alt="" width={100} height={50} />
+                                    </div>
+                                    <p className="text-xl leading-relaxed text-gray-800 font-bold font-zen-maru relative z-10">
                                         これは単なる広告ではありません。<br />
                                         未来を担う子供たちへの、温かい投資です。
                                     </p>
@@ -240,7 +308,7 @@ export default function SponsorPage() {
             </section>
 
             {/* Feature Grid with Mockup */}
-            <section id="features" className="py-32 px-6">
+            <section id="features" className="py-32 px-6 relative z-10">
                 <div className="max-w-[1024px] mx-auto">
                     <FadeIn>
                         <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center tracking-tight font-zen-maru text-gray-800">
@@ -253,11 +321,13 @@ export default function SponsorPage() {
 
                         {/* Feature 1: Preroll Ads (Large with Mockup) */}
                         <FadeIn delay={0.1} className="md:col-span-2 lg:col-span-2 row-span-2 bg-[#FDFBF7] rounded-[40px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between overflow-hidden relative group border border-orange-100 shadow-xl">
+                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-orange-50 via-transparent to-transparent opacity-60"></div>
+
                             <div className="relative z-10 flex flex-col h-full justify-center md:w-1/2">
                                 <div className="inline-block bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1 rounded-full mb-6 w-fit border border-orange-200">
                                     もっとも注目される場所
                                 </div>
-                                <h3 className="text-3xl md:text-4xl font-bold mb-6 font-zen-maru text-gray-800">
+                                <h3 className="text-3xl md:text-4xl font-bold mb-6 font-zen-maru text-gray-800 leading-snug">
                                     動画広告<span className="text-orange-400">.</span><br />
                                     心を動かす15秒。
                                 </h3>
@@ -266,7 +336,7 @@ export default function SponsorPage() {
                                     子どもの成長を楽しみに待つ保護者の、期待感が最高潮に達する瞬間です。<br />
                                     <span className="text-orange-500 font-bold mt-2 block border-b-2 border-orange-200 inline-block">完全視聴率は90%以上。</span>
                                 </p>
-                                <div className="flex items-center gap-3 text-gray-500 font-bold text-sm bg-white px-4 py-2 rounded-full w-fit shadow-sm">
+                                <div className="flex items-center gap-3 text-gray-500 font-bold text-sm bg-white px-4 py-2 rounded-full w-fit shadow-sm border border-gray-100">
                                     <PlayCircle className="w-5 h-5 text-orange-400" />
                                     <span>実際の画面イメージ</span>
                                 </div>
@@ -276,13 +346,10 @@ export default function SponsorPage() {
                             <div className="relative z-10 w-full md:w-1/2 flex justify-center mt-12 md:mt-0 transform translate-y-8 md:translate-y-0 md:translate-x-8">
                                 <PhoneMockup />
                             </div>
-
-                            {/* Background Effects - Soft Warmth */}
-                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-orange-50 via-transparent to-transparent opacity-60"></div>
                         </FadeIn>
 
                         {/* Feature 2: Targeting */}
-                        <FadeIn delay={0.2} className="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center relative overflow-hidden group shadow-lg ring-1 ring-gray-100 hover:ring-orange-200 transition-all">
+                        <ScaleIn delay={0.2} className="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center relative overflow-hidden group shadow-lg ring-1 ring-gray-100 hover:ring-orange-200 transition-all hover:translate-y-[-5px]">
                             <div className="relative z-10">
                                 <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-500">
                                     <MapPin className="w-7 h-7" />
@@ -293,10 +360,10 @@ export default function SponsorPage() {
                                     商圏内の子育て世代に<span className="font-bold text-orange-500 bg-orange-50 px-1">100%リーチ</span>します。無駄打ちは一切ありません。
                                 </p>
                             </div>
-                        </FadeIn>
+                        </ScaleIn>
 
                         {/* Feature 3: Trust */}
-                        <FadeIn delay={0.3} className="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center relative overflow-hidden shadow-lg ring-1 ring-gray-100 hover:ring-green-200 transition-all">
+                        <ScaleIn delay={0.3} className="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center relative overflow-hidden shadow-lg ring-1 ring-gray-100 hover:ring-green-200 transition-all hover:translate-y-[-5px]">
                             <div className="relative z-10">
                                 <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-500">
                                     <Heart className="w-7 h-7" />
@@ -306,14 +373,15 @@ export default function SponsorPage() {
                                     「園が選んだ企業」として紹介されるため、保護者からの<span className="font-bold text-green-600 bg-green-50 px-1">ブランド好感度</span>が劇的に向上します。
                                 </p>
                             </div>
-                        </FadeIn>
+                        </ScaleIn>
 
                     </div>
                 </div>
             </section>
 
             {/* Pricing Comparison - Clean & Friendly */}
-            <section id="pricing" className="py-24 bg-white rounded-t-[3rem]">
+            <section id="pricing" className="py-24 bg-white rounded-t-[3rem] relative z-10">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-200 via-green-200 to-blue-200 opacity-50"></div>
                 <div className="max-w-[1024px] mx-auto px-6">
                     <FadeIn>
                         <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center font-zen-maru text-gray-800">
@@ -322,7 +390,10 @@ export default function SponsorPage() {
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* Mini Plan */}
-                            <div className="flex flex-col p-8 rounded-[30px] border border-gray-100 hover:border-green-300 hover:shadow-xl transition-all bg-white group">
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                className="flex flex-col p-8 rounded-[30px] border border-gray-100 hover:border-green-300 hover:shadow-xl transition-all bg-white group"
+                            >
                                 <h3 className="text-lg font-bold mb-2 text-green-600 font-zen-maru">ミニプラン</h3>
                                 <div className="text-4xl font-bold mb-6 tracking-tight text-gray-700">¥5,000<span className="text-sm font-normal text-gray-400 ml-1">/ 月</span></div>
                                 <p className="text-sm text-gray-500 mb-8 min-h-[40px]">
@@ -335,12 +406,15 @@ export default function SponsorPage() {
                                 <button className="w-full py-3 rounded-full bg-gray-50 text-gray-600 font-bold hover:bg-green-50 hover:text-green-700 transition-colors text-sm group-hover:shadow-md">
                                     申し込む
                                 </button>
-                            </div>
+                            </motion.div>
 
                             {/* Entry Plan (Recommended) */}
-                            <div className="flex flex-col p-8 rounded-[30px] border-2 border-orange-400 relative shadow-2xl bg-white scale-[1.02] z-10">
-                                <div className="absolute top-0 right-0 bg-orange-400 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-2xl rounded-tr-[28px] shadow-sm">
-                                    人気 No.1
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                className="flex flex-col p-8 rounded-[30px] border-2 border-orange-400 relative shadow-2xl bg-white scale-[1.02] z-10"
+                            >
+                                <div className="absolute top-0 right-0 bg-orange-400 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-2xl rounded-tr-[28px] shadow-sm flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-white" /> 人気 No.1
                                 </div>
                                 <h3 className="text-lg font-bold mb-2 text-orange-500 font-zen-maru">エントリープラン</h3>
                                 <div className="text-4xl font-bold mb-6 tracking-tight text-gray-800">¥10,000<span className="text-sm font-normal text-gray-400 ml-1">/ 月</span></div>
@@ -355,10 +429,13 @@ export default function SponsorPage() {
                                 <button className="w-full py-3.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold hover:shadow-lg hover:from-orange-500 hover:to-orange-600 transition-all text-sm shadow-orange-200">
                                     今すぐ申し込む
                                 </button>
-                            </div>
+                            </motion.div>
 
                             {/* Standard Plan */}
-                            <div className="flex flex-col p-8 rounded-[30px] border border-gray-100 hover:border-blue-300 hover:shadow-xl transition-all bg-white group">
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                className="flex flex-col p-8 rounded-[30px] border border-gray-100 hover:border-blue-300 hover:shadow-xl transition-all bg-white group"
+                            >
                                 <h3 className="text-lg font-bold mb-2 text-blue-600 font-zen-maru">スタンダードプラン</h3>
                                 <div className="text-4xl font-bold mb-6 tracking-tight text-gray-700">¥30,000<span className="text-sm font-normal text-gray-400 ml-1">/ 月</span></div>
                                 <p className="text-sm text-gray-500 mb-8 min-h-[40px]">
@@ -372,28 +449,36 @@ export default function SponsorPage() {
                                 <button className="w-full py-3 rounded-full bg-gray-50 text-gray-600 font-bold hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm group-hover:shadow-md">
                                     申し込む
                                 </button>
-                            </div>
+                            </motion.div>
                         </div>
 
                         {/* Login Pop Option */}
-                        <div className="mt-12 p-8 bg-gray-50 rounded-[30px] flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-100">
-                            <div>
-                                <div className="inline-block bg-gray-800 text-white text-[10px] font-bold px-3 py-1 rounded-full mb-3">オプション</div>
-                                <h4 className="text-lg font-bold mb-2 text-gray-800">ログインジャック (POP広告)</h4>
+                        <motion.div
+                            whileHover={{ scale: 1.01 }}
+                            className="mt-12 p-8 bg-gray-50 rounded-[30px] flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-100 relative overflow-hidden"
+                        >
+                            <div className="absolute right-[-20px] bottom-[-20px] opacity-10 transform -rotate-12">
+                                <Image src="/logo_sodachi.png" alt="" width={150} height={75} />
+                            </div>
+                            <div className="relative z-10">
+                                <div className="inline-block bg-gray-800 text-white text-[10px] font-bold px-3 py-1 rounded-full mb-3 shadow-md">オプション</div>
+                                <h4 className="text-lg font-bold mb-2 text-gray-800 flex items-center gap-2">
+                                    ログインジャック (POP広告)  <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
+                                </h4>
                                 <p className="text-sm text-gray-500">アプリ起動直後、全ユーザーに全画面でアプローチ。</p>
                             </div>
-                            <div className="text-right">
-                                <div className="text-2xl font-bold text-gray-800">¥30,000<span className="text-xs font-normal text-gray-500 ml-1">/ 期間</span></div>
+                            <div className="text-right relative z-10">
+                                <div className="text-2xl font-bold text-gray-800">¥30,000<span className="text-xs font-normal text-gray-500 ml-1">/ 月</span></div>
                                 <p className="text-xs text-orange-500 font-bold mt-1">※プラン併用で20%OFF</p>
                             </div>
-                        </div>
+                        </motion.div>
 
                     </FadeIn>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="bg-cream py-12 text-xs text-gray-400 border-t border-orange-100/50">
+            <footer className="bg-cream py-12 text-xs text-gray-400 border-t border-orange-100/50 relative z-10">
                 <div className="max-w-[980px] mx-auto px-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="font-sans">Copyright © 2026 Sodachi Biyori Inc. All rights reserved.</p>
