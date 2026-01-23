@@ -18,6 +18,11 @@ const config = {
             },
         },
         extend: {
+            fontFamily: {
+                sans: ["var(--font-noto-sans)", "var(--font-outfit)", "sans-serif"],
+                outfit: ["var(--font-outfit)", "sans-serif"],
+                "zen-maru": ["var(--font-zen-maru)", "sans-serif"],
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
