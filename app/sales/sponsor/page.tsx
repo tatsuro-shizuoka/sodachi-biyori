@@ -46,7 +46,7 @@ const PhoneMockup = () => {
                 if (prev === 'player') return 'pop';
                 return 'gallery';
             });
-        }, 3500); // Slightly faster cycle
+        }, 3500);
         return () => clearInterval(timer);
     }, []);
 
@@ -73,9 +73,14 @@ const PhoneMockup = () => {
                             {/* Top Banner (Ad) */}
                             <div className="bg-orange-50 p-2 text-center border-b border-orange-100">
                                 <div className="text-[10px] text-orange-600 font-bold mb-1">広告: エントリー/スタンダード</div>
-                                <div className="bg-white rounded-lg p-2 text-xs font-bold text-gray-600 shadow-sm border border-orange-100">
-                                    地域のパン屋さん<br />
-                                    <span className="text-[10px] font-normal text-orange-500">園児限定 10%OFFクーポン配布中！</span>
+                                <div className="bg-white rounded-lg p-2 text-xs font-bold text-gray-600 shadow-sm border border-orange-100 flex items-center gap-2 text-left">
+                                    <div className="w-10 h-10 relative rounded overflow-hidden shrink-0">
+                                        <Image src="/img_classroom.png" alt="" fill className="object-cover" />
+                                    </div>
+                                    <div>
+                                        地域のパン屋さん<br />
+                                        <span className="text-[10px] font-normal text-orange-500">園児限定 10%OFF！</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -148,28 +153,41 @@ const PhoneMockup = () => {
                                 </div>
                             </div>
 
-                            {/* POP Modal */}
-                            <div className="bg-white rounded-2xl p-4 shadow-2xl relative w-full aspect-[4/5] flex flex-col justify-center items-center text-center space-y-4 border-2 border-orange-100">
-                                <div className="absolute -top-3 -right-3 bg-white rounded-full p-1 shadow-md border border-gray-100">
-                                    <X className="w-5 h-5 text-gray-400" />
+                            {/* POP Modal (Visually Rich) */}
+                            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl relative w-full aspect-[4/5] flex flex-col text-center border-2 border-orange-100">
+                                <div className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-1">
+                                    <X className="w-4 h-4 text-white" />
                                 </div>
 
-                                <div className="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded">
-                                    あなたへのお知らせ
+                                <div className="relative h-1/2 w-full">
+                                    <Image src="/img_classroom.png" alt="Classroom" fill className="object-cover" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end justify-center p-4">
+                                        <h4 className="text-white font-bold font-zen-maru text-xl drop-shadow-md">
+                                            春の体験レッスン<br />
+                                            受付スタート！
+                                        </h4>
+                                    </div>
                                 </div>
 
-                                <h4 className="text-lg font-bold text-gray-800 font-zen-maru">
-                                    春の体験レッスン<br />
-                                    受付スタート！
-                                </h4>
+                                <div className="h-1/2 p-4 flex flex-col justify-between items-center bg-white">
+                                    <div className="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded mb-1">
+                                        あなたへのお知らせ
+                                    </div>
 
-                                <div className="w-full h-24 bg-orange-50 rounded-lg flex items-center justify-center">
-                                    <Image src="/logo_sodachi.png" alt="Logo" width={60} height={30} className="opacity-50" />
+                                    <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                                        地域の皆様へ。<br />
+                                        お子様の感性を育むアート教室を開催します。<br />
+                                        無料体験実施中！
+                                    </p>
+
+                                    <div className="w-full bg-orange-50 rounded-lg py-2 mb-2">
+                                        <Image src="/logo_sodachi.png" alt="Logo" width={50} height={25} className="mx-auto opacity-50" />
+                                    </div>
+
+                                    <button className="w-full py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-200 animate-pulse">
+                                        詳細をチェック
+                                    </button>
                                 </div>
-
-                                <button className="w-full py-2 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-200">
-                                    詳細をチェック
-                                </button>
                             </div>
                         </motion.div>
                     )}
@@ -189,12 +207,25 @@ export default function SponsorPage() {
     return (
         <div className="min-h-screen bg-cream text-text font-sans selection:bg-orange-200 selection:text-orange-900 pb-32 overflow-hidden">
 
-            {/* Background Pattern (Logos) */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0 overflow-hidden">
-                <div className="absolute top-20 left-10 transform -rotate-12"><Image src="/logo_sodachi.png" alt="" width={200} height={100} /></div>
-                <div className="absolute top-1/4 right-0 transform rotate-45"><Image src="/logo_sodachi.png" alt="" width={300} height={150} /></div>
-                <div className="absolute bottom-1/3 left-[-50px] transform -rotate-15"><Image src="/logo_sodachi.png" alt="" width={250} height={125} /></div>
-                <div className="absolute bottom-10 right-10 transform rotate-6"><Image src="/logo_sodachi.png" alt="" width={150} height={75} /></div>
+            {/* Background Pattern (Logos & Photos) */}
+            <div className="fixed inset-0 pointer-events-none -z-10">
+                {/* Top Right Photo Blob */}
+                <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] opacity-20 rounded-full overflow-hidden blur-3xl">
+                    <Image src="/img_classroom.png" alt="" fill className="object-cover" />
+                </div>
+                {/* Bottom Left Photo Blob */}
+                <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] opacity-20 rounded-full overflow-hidden blur-3xl">
+                    <Image src="/img_playground.png" alt="" fill className="object-cover" />
+                </div>
+
+                {/* Logo Pattern Overlay */}
+                <div className="absolute inset-0 opacity-[0.03] overflow-hidden">
+                    <div className="absolute top-20 left-10 transform -rotate-12"><Image src="/logo_sodachi.png" alt="" width={200} height={100} /></div>
+                    <div className="absolute top-1/4 right-20 transform rotate-45"><Image src="/logo_sodachi.png" alt="" width={300} height={150} /></div>
+                    <div className="absolute bottom-1/3 left-[-50px] transform -rotate-15"><Image src="/logo_sodachi.png" alt="" width={250} height={125} /></div>
+                    <div className="absolute bottom-20 right-10 transform rotate-6"><Image src="/logo_sodachi.png" alt="" width={150} height={75} /></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-50 scale-150"><Image src="/logo_sodachi.png" alt="" width={500} height={250} /></div>
+                </div>
             </div>
 
             {/* Navigation (Soft & Warm) */}
@@ -218,7 +249,12 @@ export default function SponsorPage() {
             <section className="pt-32 pb-16 md:pt-44 md:pb-24 px-6 text-center relative z-10">
                 <div className="max-w-[980px] mx-auto">
                     <ScaleIn>
-                        <div className="text-sm md:text-base font-bold text-orange-500 mb-4 tracking-wider font-zen-maru bg-orange-50 inline-block px-4 py-1 rounded-full border border-orange-100">
+                        {/* Large Hero Logo */}
+                        <div className="mb-10 flex justify-center">
+                            <Image src="/logo_sodachi.png" alt="そだちびより" width={240} height={120} className="w-48 md:w-64 h-auto drop-shadow-sm" priority />
+                        </div>
+
+                        <div className="text-sm md:text-base font-bold text-orange-500 mb-6 tracking-wider font-zen-maru bg-orange-50 inline-block px-4 py-1.5 rounded-full border border-orange-100">
                             地域共創パートナープログラム
                         </div>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.2] tracking-tight mb-8 font-zen-maru text-gray-800">
@@ -249,12 +285,14 @@ export default function SponsorPage() {
                             src="/img_playground.png"
                             alt="園庭で遊ぶ子供たち"
                             fill
-                            className="object-cover transition-transform duration-[2s] group-hover:scale-105"
+                            className="object-cover transition-transform duration-[3s] group-hover:scale-110"
                             priority
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                         <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 text-white text-left">
-                            <p className="text-lg md:text-2xl font-bold mb-2 font-zen-maru drop-shadow-md">子どもたちの笑顔が、地域の未来。</p>
+                            <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl shadow-lg inline-block">
+                                <p className="text-lg md:text-2xl font-bold font-zen-maru text-gray-800">子どもたちの笑顔が、地域の未来。</p>
+                            </div>
                         </div>
                     </div>
                 </FadeIn>
@@ -262,11 +300,6 @@ export default function SponsorPage() {
 
             {/* Concept Section - Warmth Emphasis */}
             <section id="concept" className="py-24 relative overflow-hidden z-10">
-                {/* Background decoration */}
-                <div className="absolute top-0 left-0 w-full h-full bg-[#FFF8E1] opacity-50 -z-10"></div>
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-green-200 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: "2s" }}></div>
-
                 <div className="max-w-[980px] mx-auto px-6 text-center">
                     <FadeIn>
                         <h2 className="text-3xl md:text-5xl font-bold mb-16 tracking-tight font-zen-maru text-gray-800">
@@ -301,14 +334,21 @@ export default function SponsorPage() {
                                     fill
                                     className="object-cover"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent mix-blend-overlay"></div>
                             </div>
                         </div>
                     </FadeIn>
                 </div>
             </section>
 
-            {/* Feature Grid with Mockup */}
+            {/* Feature Grid with Mockup - Photo Background */}
             <section id="features" className="py-32 px-6 relative z-10">
+                {/* Section Background Image */}
+                <div className="absolute inset-0 -z-10 bg-orange-50">
+                    <Image src="/img_playground.png" alt="" fill className="object-cover opacity-5 grayscale custom-grayscale-blend" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/90 to-cream"></div>
+                </div>
+
                 <div className="max-w-[1024px] mx-auto">
                     <FadeIn>
                         <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center tracking-tight font-zen-maru text-gray-800">
@@ -384,8 +424,10 @@ export default function SponsorPage() {
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-200 via-green-200 to-blue-200 opacity-50"></div>
                 <div className="max-w-[1024px] mx-auto px-6">
                     <FadeIn>
-                        <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center font-zen-maru text-gray-800">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center font-zen-maru text-gray-800 relative inline-block">
+                            <Star className="absolute -top-6 -left-8 w-8 h-8 text-orange-300 transform -rotate-12" fill="currentColor" />
                             あなたに最適な応援プラン。
+                            <Star className="absolute -bottom-4 -right-8 w-6 h-6 text-green-300 transform rotate-12" fill="currentColor" />
                         </h2>
 
                         <div className="grid md:grid-cols-3 gap-6">
@@ -457,6 +499,10 @@ export default function SponsorPage() {
                             whileHover={{ scale: 1.01 }}
                             className="mt-12 p-8 bg-gray-50 rounded-[30px] flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-100 relative overflow-hidden"
                         >
+                            <div className="absolute top-0 right-0 w-[400px] h-full overflow-hidden opacity-20 pointer-events-none">
+                                <Image src="/img_playground.png" alt="" fill className="object-cover mask-image-gradient" />
+                            </div>
+
                             <div className="absolute right-[-20px] bottom-[-20px] opacity-10 transform -rotate-12">
                                 <Image src="/logo_sodachi.png" alt="" width={150} height={75} />
                             </div>
