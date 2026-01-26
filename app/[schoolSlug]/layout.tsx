@@ -102,13 +102,13 @@ export default function SchoolLayout({
                         <User className="h-5 w-5 mr-3 text-slate-400 group-hover:text-primary transition-colors" />
                         マイアカウント
                     </Link>
-                    <Link
+                    {/* <Link
                         href={`/${schoolSlug}/settings`}
                         className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg group transition-colors"
                     >
                         <Settings className="h-5 w-5 mr-3 text-slate-400 group-hover:text-primary transition-colors" />
                         AI うちの子登録
-                    </Link>
+                    </Link> */}
                     <Link
                         href={`/${schoolSlug}/support`}
                         className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg group transition-colors"

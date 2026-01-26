@@ -69,7 +69,11 @@ export async function POST(request: Request) {
 
         // Redirect to the first available school or default
         const primarySlug = Array.from(schoolSlugs)[0] || 'sodachi-en'
-        return NextResponse.json({ success: true, redirectTo: `/${primarySlug}/gallery` })
+        return NextResponse.json({
+            success: true,
+            token, // Return token for mobile app
+            redirectTo: `/${primarySlug}/gallery`
+        })
 
     } catch (error) {
         console.error('Guardian login error:', error)

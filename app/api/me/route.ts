@@ -34,7 +34,7 @@ export async function GET() {
         })
 
         if (!guardian) {
-            return NextResponse.json({ error: 'Guardian not found' }, { status: 404 })
+            return NextResponse.json({ error: 'Guardian not found (Session invalid)' }, { status: 401 })
         }
 
         // Determine primary class and school (just taking the first available one for now)

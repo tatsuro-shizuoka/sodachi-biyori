@@ -47,7 +47,7 @@ export async function GET(
         })
 
         if (!guardian) {
-            return NextResponse.json({ error: 'Guardian not found' }, { status: 404 })
+            return NextResponse.json({ error: 'Guardian not found (Session invalid)' }, { status: 401 })
         }
 
         const registeredChildren = guardian.children

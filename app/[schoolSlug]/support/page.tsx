@@ -67,8 +67,8 @@ export default function SupportPage() {
                     「見逃した成長を手のひらに」
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                    お子様の大切な成長の瞬間を保護者の皆様にお届けするため、
-                    そだちびよりは多くの機能を無料で提供しています。
+                    「そだちびより」は、保護者の皆様にお子様の成長を無料でお届けするため、
+                    多くの応援と想いのもと、システムを無償で独自開発・運用しています。
                 </p>
             </div>
 
@@ -76,17 +76,17 @@ export default function SupportPage() {
             <div className="bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-900/20 dark:to-pink-900/20 rounded-3xl p-6 mb-8 border border-orange-100 dark:border-orange-800">
                 <h2 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-orange-500" />
-                    私たちのミッション
+                    独自のシステムで、笑顔を届けたい
                 </h2>
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     <p>
-                        保育園・幼稚園での日常は、お子様にとってかけがえのない成長の時間です。
-                        しかし、お仕事で忙しい保護者の方々は、その瞬間を見逃してしまうことも。
+                        「そだちびより」は、園の先生方の負担を最小限に抑えながら、
+                        保護者の皆様に安心してお子様の様子をご覧いただけるよう、
+                        独自の動画配信・AI解析システムを開発しました。
                     </p>
                     <p>
-                        そだちびよりは、園が撮影した動画を保護者に届け、
-                        <span className="font-bold text-orange-600">AI技術を活用してお子様の登場シーンを自動検出</span>
-                        することで、「見逃した成長を手のひらに」お届けします。
+                        このシステムは現在、皆様からの応援と開発チームの想いによって無償で提供されています。
+                        継続的なサービス運営と機能改善のため、温かいご支援をお願いいたします。
                     </p>
                 </div>
             </div>
@@ -159,8 +159,8 @@ export default function SupportPage() {
                                     key={amount}
                                     onClick={() => { setSelectedAmount(amount); setCustomAmount(''); }}
                                     className={`py-3 px-4 rounded-xl font-bold text-sm transition-all ${selectedAmount === amount
-                                            ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg scale-105'
-                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                        ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg scale-105'
+                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                                         }`}
                                 >
                                     ¥{amount.toLocaleString()}
@@ -169,8 +169,8 @@ export default function SupportPage() {
                             <button
                                 onClick={() => setSelectedAmount(-1)}
                                 className={`py-3 px-4 rounded-xl font-bold text-sm transition-all ${selectedAmount === -1
-                                        ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg scale-105'
-                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                    ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg scale-105'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                                     }`}
                             >
                                 その他
@@ -196,8 +196,8 @@ export default function SupportPage() {
                             onClick={handlePayPay}
                             disabled={!selectedAmount || isProcessing}
                             className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${selectedAmount && !isProcessing
-                                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                                 }`}
                         >
                             {isProcessing ? (

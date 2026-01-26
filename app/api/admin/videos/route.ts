@@ -33,8 +33,90 @@ export async function POST(request: Request) {
             }
         })
 
-        // Trigger Notification Logic Here (Mock)
-        // In real app: Find guardians of this class -> Send Mail
+        if (video.status === 'published') {
+            try {
+                // Fetch class info to get schoolId
+                const videoClass = await prisma.class.findUnique({
+                    where: { id: classId },
+                    select: { schoolId: true, name: true }
+                })
+
+                // Create Announcement
+                await prisma.announcement.create({
+                    data: {
+                        title: `新着動画: ${title}`,
+                        body: `「${videoClass?.name}」に新しい動画が追加されました。`,
+                        type: 'video_new',
+                        targetType: 'class',
+                        targetId: classId,
+                        schoolId: videoClass?.schoolId,
+                        publishedAt: new Date()
+                    }
+                })
+            } catch (err) {
+                console.error('Failed to create announcement for new video:', err)
+            }
+
+            try {
+                // Find all guardians in the class who have notifications enabled
+                const tokens = await prisma.deviceToken.findMany({
+                    where: {
+                        guardian: {
+                            children: {
+                                some: {
+                                    child: {
+                                        classes: {
+                                            some: {
+                                                classId: classId
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            // Check if they have disabled notifications for this class
+                            // GuardianClassroomSetting: notifyNewVideo defaults to true, so no record means enabled?
+                            // Or we check explicit false. 
+                            // Let's assume logic: if setting exists and notifyNewVideo is false, exclude.
+                            // However, filtering with deep relation negation is tricky in Prisma.
+                            // Easier to fetch tokens and filter in code or use complex query.
+                            // For simplicity/performance trade-off with small user base:
+                            // Fetch all tokens of guardians in class, then filter by those who haven't muted.
+                        },
+                        isActive: true
+                    },
+                    include: {
+                        guardian: {
+                            include: {
+                                notifSettings: {
+                                    where: { classId }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const pushTokens = tokens
+                    .filter(t => {
+                        const setting = t.guardian.notifSettings[0];
+                        // Default is true if no setting found
+                        return !setting || setting.notifyNewVideo !== false;
+                    })
+                    .map(t => t.token);
+
+                if (pushTokens.length > 0) {
+                    const { sendPushNotifications } = await import('@/lib/notifications');
+                    await sendPushNotifications(
+                        pushTokens,
+                        '新しい動画が届きました！',
+                        `${title} が公開されました。`,
+                        { videoId: video.id, classId }
+                    );
+                }
+            } catch (err) {
+                console.error('Failed to send notifications:', err);
+                // Don't fail the request just because notification failed
+            }
+        }
 
         return NextResponse.json(video)
 

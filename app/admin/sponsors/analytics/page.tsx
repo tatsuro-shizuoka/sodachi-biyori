@@ -64,7 +64,7 @@ export default function SponsorAnalyticsPage() {
     const [loading, setLoading] = useState(true)
     const [dateRange, setDateRange] = useState('all')
     const [adType, setAdType] = useState('all')
-    const [analyticsTab, setAnalyticsTab] = useState<'video' | 'events'>('video')
+    const [analyticsTab, setAnalyticsTab] = useState<'video' | 'display' | 'events'>('video')
     const [sortField, setSortField] = useState<string>('impressions')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
@@ -135,11 +135,17 @@ export default function SponsorAnalyticsPage() {
         }
     }
 
-    const sortedAds = data ? [...data.prerollAds, ...data.midrollAds].sort((a, b) => {
-        const aVal = (a as any)[sortField] ?? 0
-        const bVal = (b as any)[sortField] ?? 0
-        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
-    }) : []
+    const sortedAds = data ? [...data.prerollAds, ...data.midrollAds, ...data.sponsors]
+        .filter(ad => {
+            if (analyticsTab === 'video') return ad.type === 'preroll' || ad.type === 'midroll'
+            if (analyticsTab === 'display') return ad.type === 'banner' || ad.type === 'modal'
+            return false
+        })
+        .sort((a, b) => {
+            const aVal = (a as any)[sortField] ?? 0
+            const bVal = (b as any)[sortField] ?? 0
+            return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
+        }) : []
 
     const downloadCSV = () => {
         if (!sortedAds.length) return
@@ -242,33 +248,45 @@ export default function SponsorAnalyticsPage() {
                 </div>
                 <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="flex gap-2">
-                    {[
-                        { value: 'all', label: '全タイプ', icon: BarChart3 },
-                        { value: 'preroll', label: 'プリロール', icon: Play },
-                        { value: 'midroll', label: 'ミッドロール', icon: FastForward }
-                    ].map(opt => (
-                        <button
-                            key={opt.value}
-                            onClick={() => setAdType(opt.value)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${adType === opt.value
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                        >
-                            <opt.icon className="h-3 w-3" />
-                            {opt.label}
-                        </button>
-                    ))}
+                    {analyticsTab === 'video' ? (
+                        [
+                            { value: 'all', label: '全タイプ', icon: BarChart3 },
+                            { value: 'preroll', label: 'プリロール', icon: Play },
+                            { value: 'midroll', label: 'ミッドロール', icon: FastForward }
+                        ].map(opt => (
+                            <button
+                                key={opt.value}
+                                onClick={() => setAdType(opt.value)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${adType === opt.value
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                            >
+                                <opt.icon className="h-3 w-3" />
+                                {opt.label}
+                            </button>
+                        ))
+                    ) : analyticsTab === 'display' ? (
+                        <div className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 flex items-center gap-1.5">
+                            <Monitor className="h-3 w-3" /> ディスプレイ広告
+                        </div>
+                    ) : null}
                 </div>
             </div>
 
             {/* Tabs */}
             <div className="flex gap-4 border-b border-slate-200 dark:border-slate-700">
                 <button
-                    onClick={() => setAnalyticsTab('video')}
+                    onClick={() => { setAnalyticsTab('video'); setAdType('all') }}
                     className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors ${analyticsTab === 'video' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
                     動画・広告分析
+                </button>
+                <button
+                    onClick={() => { setAnalyticsTab('display'); setAdType('all') }}
+                    className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors ${analyticsTab === 'display' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    ディスプレイ広告分析
                 </button>
                 <button
                     onClick={() => setAnalyticsTab('events')}
@@ -353,24 +371,28 @@ export default function SponsorAnalyticsPage() {
                             onMouseEnter={(e) => data && handleMetricHover(e, "CTR", `${data.summary.avgCtr.toFixed(2)}%`, "ctr")}
                             onMouseLeave={() => setHoveredData(null)}
                         />
-                        <SummaryCard
-                            icon={CheckCircle2} label="視聴完了率" value={`${data?.summary.completionRate.toFixed(1) ?? '0.0'}%`} color="green"
-                            onMouseEnter={(e) => data && handleMetricHover(e, "視聴完了率", `${data.summary.completionRate.toFixed(1)}%`, "completionRate")}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                        <SummaryCard
-                            icon={SkipForward} label="スキップ率" value={`${data?.summary.skipRate.toFixed(1) ?? '0.0'}%`} color="yellow"
-                            onMouseEnter={(e) => data && handleMetricHover(e, "スキップ率", `${data.summary.skipRate.toFixed(1)}%`, "skipRate")}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
+                        {analyticsTab === 'video' && (
+                            <>
+                                <SummaryCard
+                                    icon={CheckCircle2} label="視聴完了率" value={`${data?.summary.completionRate.toFixed(1) ?? '0.0'}%`} color="green"
+                                    onMouseEnter={(e) => data && handleMetricHover(e, "視聴完了率", `${data.summary.completionRate.toFixed(1)}%`, "completionRate")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                                <SummaryCard
+                                    icon={SkipForward} label="スキップ率" value={`${data?.summary.skipRate.toFixed(1) ?? '0.0'}%`} color="yellow"
+                                    onMouseEnter={(e) => data && handleMetricHover(e, "スキップ率", `${data.summary.skipRate.toFixed(1)}%`, "skipRate")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                                <SummaryCard
+                                    icon={TrendingUp} label="フリークエンシー" value={data?.summary.avgFrequency.toFixed(1) ?? '0.0'} color="purple"
+                                    onMouseEnter={(e) => data && handleMetricHover(e, "フリークエンシー", data.summary.avgFrequency.toFixed(1), "avgFrequency")}
+                                    onMouseLeave={() => setHoveredData(null)}
+                                />
+                            </>
+                        )}
                         <SummaryCard
                             icon={Users} label="リーチ数" value={data?.summary.uniqueReach.toLocaleString() ?? '0'} color="blue"
                             onMouseEnter={(e) => data && handleMetricHover(e, "リーチ数", data.summary.uniqueReach.toLocaleString(), "uniqueReach")}
-                            onMouseLeave={() => setHoveredData(null)}
-                        />
-                        <SummaryCard
-                            icon={TrendingUp} label="フリークエンシー" value={data?.summary.avgFrequency.toFixed(1) ?? '0.0'} color="purple"
-                            onMouseEnter={(e) => data && handleMetricHover(e, "フリークエンシー", data.summary.avgFrequency.toFixed(1), "avgFrequency")}
                             onMouseLeave={() => setHoveredData(null)}
                         />
                     </div>
@@ -563,24 +585,37 @@ export default function SponsorAnalyticsPage() {
                                             </div>
                                         </th>
                                         <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                            onClick={() => handleSort('completionRate')}
-                                            onMouseEnter={(e) => handleMetricHover(e, "完了率", "", "tableCompletion")}
+                                            onClick={() => handleSort('ctr')}
+                                            onMouseEnter={(e) => handleMetricHover(e, "CTR", "", "tableCtr")}
                                             onMouseLeave={() => setHoveredData(null)}
                                         >
                                             <div className="flex items-center gap-1">
-                                                完了率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="completionRate" />
+                                                CTR <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="ctr" />
                                             </div>
                                         </th>
-                                        <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
-                                            onClick={() => handleSort('skipRate')}
-                                            onMouseEnter={(e) => handleMetricHover(e, "スキップ率", "", "tableSkip")}
-                                            onMouseLeave={() => setHoveredData(null)}
-                                        >
-                                            <div className="flex items-center gap-1">
-                                                スキップ率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="skipRate" />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-3 font-medium">到達率</th>
+                                        {analyticsTab === 'video' && (
+                                            <>
+                                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                                    onClick={() => handleSort('completionRate')}
+                                                    onMouseEnter={(e) => handleMetricHover(e, "完了率", "", "tableCompletion")}
+                                                    onMouseLeave={() => setHoveredData(null)}
+                                                >
+                                                    <div className="flex items-center gap-1">
+                                                        完了率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="completionRate" />
+                                                    </div>
+                                                </th>
+                                                <th className="px-4 py-3 font-medium cursor-help hover:bg-slate-100 group"
+                                                    onClick={() => handleSort('skipRate')}
+                                                    onMouseEnter={(e) => handleMetricHover(e, "スキップ率", "", "tableSkip")}
+                                                    onMouseLeave={() => setHoveredData(null)}
+                                                >
+                                                    <div className="flex items-center gap-1">
+                                                        スキップ率 <HelpCircle className="h-3 w-3 text-slate-300 group-hover:text-slate-500" /> <SortIcon field="skipRate" />
+                                                    </div>
+                                                </th>
+                                                <th className="px-4 py-3 font-medium">到達率</th>
+                                            </>
+                                        )}
                                         <th className="px-4 py-3 font-medium text-center">状態</th>
                                     </tr>
                                 </thead>
@@ -600,31 +635,40 @@ export default function SponsorAnalyticsPage() {
                                                     <div className="text-xs text-slate-500 pl-5">{ad.schoolName}</div>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                                                        {ad.type === 'preroll' ? 'プリロール' : 'ミッドロール'}
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${ad.type === 'preroll' ? 'bg-blue-100 text-blue-700' :
+                                                        ad.type === 'midroll' ? 'bg-orange-100 text-orange-700' :
+                                                            'bg-purple-100 text-purple-700'
+                                                        }`}>
+                                                        {ad.type === 'preroll' ? 'プリロール' :
+                                                            ad.type === 'midroll' ? 'ミッドロール' :
+                                                                ad.type === 'modal' ? 'ポップアップ' : 'バナー'}
                                                     </span>
-                                                    {ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
-                                                    {ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
+                                                    {ad.type === 'midroll' && ad.triggerType === 'seek' && <span className="ml-1 text-xs text-slate-400">シーク時</span>}
+                                                    {ad.type === 'midroll' && ad.triggerType === 'percentage' && <span className="ml-1 text-xs text-slate-400">{ad.triggerValue}%</span>}
                                                 </td>
                                                 <td className="px-4 py-3 font-mono">{ad.impressions.toLocaleString()}</td>
                                                 <td className="px-4 py-3 font-mono">{ad.clicks.toLocaleString()}</td>
                                                 <td className="px-4 py-3 font-mono">
                                                     <span className={ad.ctr > 2 ? 'text-emerald-600 font-bold' : ''}>{ad.ctr.toFixed(2)}%</span>
                                                 </td>
-                                                <td className="px-4 py-3 font-mono">
-                                                    <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
-                                                        {ad.completionRate?.toFixed(1) ?? '-'}%
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex gap-1">
-                                                        <ProgressBar value={ad.reached25} label="25" />
-                                                        <ProgressBar value={ad.reached50} label="50" />
-                                                        <ProgressBar value={ad.reached75} label="75" />
-                                                        <ProgressBar value={ad.reached100} label="100" />
-                                                    </div>
-                                                </td>
+                                                {analyticsTab === 'video' && (
+                                                    <>
+                                                        <td className="px-4 py-3 font-mono">
+                                                            <span className={ad.completionRate && ad.completionRate > 50 ? 'text-green-600 font-bold' : ''}>
+                                                                {ad.completionRate?.toFixed(1) ?? '-'}%
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 font-mono">{ad.skipRate?.toFixed(1) ?? '-'}%</td>
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex gap-1">
+                                                                <ProgressBar value={ad.reached25} label="25" />
+                                                                <ProgressBar value={ad.reached50} label="50" />
+                                                                <ProgressBar value={ad.reached75} label="75" />
+                                                                <ProgressBar value={ad.reached100} label="100" />
+                                                            </div>
+                                                        </td>
+                                                    </>
+                                                )}
                                                 <td className="px-4 py-3 text-center">
                                                     <span className={`inline-block w-2.5 h-2.5 rounded-full ${ad.isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
                                                 </td>

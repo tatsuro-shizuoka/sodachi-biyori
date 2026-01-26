@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'development_secret_key_123')
 const ADMIN_COOKIE_NAME = 'admin_session'
@@ -66,7 +66,16 @@ export async function verifyGuardianToken(token: string) {
 
 export async function getGuardianSession() {
     const cookieStore = await cookies()
-    const token = cookieStore.get('guardian_session')?.value
+    let token = cookieStore.get('guardian_session')?.value
+
+    if (!token) {
+        const headersList = await headers()
+        const authHeader = headersList.get('authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.substring(7)
+        }
+    }
+
     if (!token) return null
     return await verifyGuardianToken(token)
 }

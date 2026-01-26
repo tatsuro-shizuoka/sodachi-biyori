@@ -17,30 +17,29 @@ model Admin {
 }
 
 model School {
-  id         String     @id @default(cuid())
-  slug       String     @unique
-  name       String
-  adminMemo  String?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  categories Category[]
-  classes    Class[]
-  sponsors   Sponsor[]
-  prerollAds PrerollAd[]
-  midrollAds MidrollAd[]
-  
-  // Engagement Settings
-  enableReactions Boolean @default(true)
-  enableStampCard Boolean @default(true)
-  enableAiAnalysis Boolean @default(false)
-  popDisplayMode  String  @default("priority") // "priority", "random", "sequential"
-  analyticsEvents AnalyticsEvent[]
+  id               String           @id @default(cuid())
+  slug             String           @unique
+  name             String
+  adminMemo        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  enableReactions  Boolean          @default(true)
+  enableStampCard  Boolean          @default(true)
+  enableAiAnalysis Boolean          @default(false)
+  popDisplayMode   String           @default("priority")
+  analyticsEvents  AnalyticsEvent[]
+  categories       Category[]
+  classes          Class[]
+  midrollAds       MidrollAd[]
+  prerollAds       PrerollAd[]
+  sponsors         Sponsor[]
+  announcements    Announcement[]
 }
 
 model Class {
   id               String                     @id @default(uuid())
   name             String
-  slug             String?                    // URL用のスラッグ (例: sakura, tanpopo)
+  slug             String?
   grade            String?
   schoolYear       String?
   password         String
@@ -49,41 +48,41 @@ model Class {
   isArchived       Boolean                    @default(false)
   createdAt        DateTime                   @default(now())
   updatedAt        DateTime                   @updatedAt
+  analyticsEvents  AnalyticsEvent[]
   children         ChildClassroom[]
   school           School?                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   guardianSettings GuardianClassroomSetting[]
   videos           Video[]
 
   @@unique([schoolId, slug])
-  analyticsEvents AnalyticsEvent[]
 }
 
 model Video {
-  id             String      @id @default(uuid())
+  id             String         @id @default(uuid())
   title          String
   description    String?
   videoUrl       String
   vimeoVideoId   String?
   thumbnailUrl   String?
-  status         String      @default("draft")
+  status         String         @default("draft")
   recordedOn     DateTime?
   durationSec    Int?
   adminMemo      String?
-  isDownloadable Boolean     @default(false)
-  isAllClasses   Boolean     @default(false)  // 全クラス共通かどうか
+  isDownloadable Boolean        @default(false)
+  isAllClasses   Boolean        @default(false)
   categoryId     String?
   startAt        DateTime?
   endAt          DateTime?
   classId        String
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  analysisStatus String?        @default("pending")
   favorites      Favorite[]
-  class          Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
-  category       Category?   @relation(fields: [categoryId], references: [id])
-  views          VideoView[]
   reactions      ReactionLog[]
-  analysisStatus String?       @default("pending") // pending, waiting_mp4, downloading, analyzing, complete, failed
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  class          Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
   faceTags       VideoFaceTag[]
+  views          VideoView[]
 }
 
 model VideoView {
@@ -103,57 +102,52 @@ model VideoView {
 model ReactionLog {
   id         String    @id @default(uuid())
   videoId    String
-  type       String    // "CLAP", "FLOWER"
-  guardianId String?   // Optional
+  type       String
+  guardianId String?
   createdAt  DateTime  @default(now())
-  
-  video      Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
   guardian   Guardian? @relation(fields: [guardianId], references: [id])
+  video      Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([videoId])
 }
 
 model StampCard {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   guardianId    String
-  year          Int       // e.g., 2024
-  stamps        String    // JSON string: [{date: "2024-04-01", type: "LOGIN"}]
+  year          Int
+  stamps        String
   lastStampedAt DateTime
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  guardian      Guardian  @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  guardian      Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
 
   @@unique([guardianId, year])
 }
 
 model Sponsor {
-  id       String  @id @default(uuid())
-  name     String
-  imageUrl String?
-  linkUrl  String?
-  position String  @default("footer")
-  isActive Boolean @default(true)
-  priority Int     @default(0)
-  ctaText  String? // e.g. "サイトを見る", "詳しくはこちら"
-  videoUrl String? // Optional sponsor video URL
-  
-  // Premium Features
-  displayStyle     String    @default("banner") // "banner", "modal"
-  displayFrequency String    @default("always") // "always", "once_per_day", "once_per_session"
-  contentType      String    @default("image") // "image", "video"
+  id               String              @id @default(uuid())
+  name             String
+  imageUrl         String?
+  linkUrl          String?
+  position         String              @default("footer")
+  isActive         Boolean             @default(true)
+  priority         Int                 @default(0)
+  ctaText          String?
+  videoUrl         String?
+  displayStyle     String              @default("banner")
+  displayFrequency String              @default("always")
+  contentType      String              @default("image")
   validFrom        DateTime?
   validTo          DateTime?
-
-  impressions      SponsorImpression[]
-  clicks           SponsorClick[]
-  supports         SponsorSupport[]
-  prerollAds       PrerollAd[]
-  midrollAds       MidrollAd[]
   createdAt        DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  schoolId    String?
-  school      School?             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  updatedAt        DateTime            @updatedAt
+  schoolId         String?
+  midrollAds       MidrollAd[]
+  prerollAds       PrerollAd[]
+  school           School?             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  clicks           SponsorClick[]
+  impressions      SponsorImpression[]
+  supports         SponsorSupport[]
 
   @@index([schoolId])
 }
@@ -161,9 +155,9 @@ model Sponsor {
 model SponsorImpression {
   id        String   @id @default(uuid())
   sponsorId String
-  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
   schoolId  String?
   createdAt DateTime @default(now())
+  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
 
   @@index([sponsorId])
   @@index([schoolId])
@@ -172,9 +166,9 @@ model SponsorImpression {
 model SponsorClick {
   id        String   @id @default(uuid())
   sponsorId String
-  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
   schoolId  String?
   createdAt DateTime @default(now())
+  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
 
   @@index([sponsorId])
   @@index([schoolId])
@@ -183,14 +177,14 @@ model SponsorClick {
 model SponsorSupport {
   id            String   @id @default(uuid())
   sponsorId     String?
-  sponsor       Sponsor? @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
   schoolId      String?
   guardianId    String?
   amount        Int?
-  status        String   @default("pending") // pending, completed, failed, refunded
-  paymentMethod String?  // paypay, stripe, etc.
-  paymentId     String?  // External payment ID
+  status        String   @default("pending")
+  paymentMethod String?
+  paymentId     String?
   createdAt     DateTime @default(now())
+  sponsor       Sponsor? @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
 
   @@index([sponsorId])
   @@index([schoolId])
@@ -208,42 +202,42 @@ model Category {
 }
 
 model Guardian {
-  id            String                     @id @default(uuid())
-  name          String
-  email         String                     @unique
-  passwordHash  String
-  createdAt     DateTime                   @default(now())
-  updatedAt     DateTime                   @updatedAt
-  deviceTokens  DeviceToken[]
-  favorites     Favorite[]
-  children      GuardianChild[]
-  notifSettings GuardianClassroomSetting[]
-  videoViews    VideoView[]
-  reactionLogs  ReactionLog[]
-  stampCards    StampCard[]
+  id              String                     @id @default(uuid())
+  name            String
+  email           String                     @unique
+  passwordHash    String
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
   analyticsEvents AnalyticsEvent[]
+  deviceTokens    DeviceToken[]
+  favorites       Favorite[]
+  children        GuardianChild[]
+  notifSettings   GuardianClassroomSetting[]
+  reactionLogs    ReactionLog[]
+  stampCards      StampCard[]
+  videoViews      VideoView[]
 }
 
 model Child {
   id               String           @id @default(uuid())
   name             String
   birthday         DateTime?
-  faceId           String?          // AWS Rekognition Face ID
-  faceImageUrl     String?          // URL to the registered face photo
-  faceRegisteredAt DateTime?        // When face was registered
+  faceId           String?
+  faceImageUrl     String?
+  faceRegisteredAt DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   classes          ChildClassroom[]
+  faces            ChildFace[]
   guardians        GuardianChild[]
   faceTags         VideoFaceTag[]
-  faces            ChildFace[]
 }
 
 model ChildFace {
   id        String   @id @default(uuid())
   childId   String
-  faceId    String   // AWS Rekognition Face ID
-  imageUrl  String   // S3/R2 URL
+  faceId    String
+  imageUrl  String
   createdAt DateTime @default(now())
   child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 
@@ -265,8 +259,8 @@ model ChildClassroom {
   childId    String
   classId    String
   schoolYear String?
-  class      Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
   child      Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  class      Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@unique([childId, classId])
 }
@@ -276,8 +270,8 @@ model Favorite {
   guardianId String
   videoId    String
   createdAt  DateTime @default(now())
-  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@unique([guardianId, videoId])
 }
@@ -316,65 +310,58 @@ model VideoFaceTag {
   confidence   Float
   isTentative  Boolean  @default(false)
   createdAt    DateTime @default(now())
-  
-  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  child      Child?   @relation(fields: [childId], references: [id])
+  child        Child?   @relation(fields: [childId], references: [id])
+  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([videoId])
 }
 
-// プレロール広告専用テーブル（動画再生前に表示される広告）
 model PrerollAd {
-  id               String    @id @default(uuid())
-  name             String    // 広告名
-  videoUrl         String    // 動画URL (Cloudflare等)
-  thumbnailUrl     String?   // サムネイル画像URL
-  linkUrl          String?   // クリック時のリンク先
-  ctaText          String?   // CTAボタンテキスト
-  skipAfterSeconds Int       @default(5) // 何秒後にスキップ可能か
-  priority         Int       @default(0) // 優先度（高いほど優先）
-  isActive         Boolean   @default(true)
-  validFrom        DateTime? // 掲載開始日
-  validTo          DateTime? // 掲載終了日
-  schoolId         String?   // null = 全園共通
-  school           School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
+  id               String         @id @default(uuid())
+  name             String
+  videoUrl         String
+  thumbnailUrl     String?
+  linkUrl          String?
+  ctaText          String?
+  skipAfterSeconds Int            @default(5)
+  priority         Int            @default(0)
+  isActive         Boolean        @default(true)
+  validFrom        DateTime?
+  validTo          DateTime?
+  schoolId         String?
   sponsorId        String?
-  sponsor          Sponsor?  @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
-
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   impressions      AdImpression[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  school           School?        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  sponsor          Sponsor?       @relation(fields: [sponsorId], references: [id])
 
   @@index([schoolId])
   @@index([sponsorId])
   @@index([isActive])
 }
 
-// ミッドロール広告（動画途中に表示される広告）
 model MidrollAd {
-  id               String    @id @default(uuid())
-  name             String    // 広告名
-  videoUrl         String    // 動画URL (Cloudflare等)
-  thumbnailUrl     String?   // サムネイル画像URL
-  linkUrl          String?   // クリック時のリンク先
-  ctaText          String?   // CTAボタンテキスト
-  skipAfterSeconds Int       @default(5) // 何秒後にスキップ可能か
-  triggerType      String    @default("percentage") // "percentage" = %, "seek" = シーク時
-  triggerValue     Float?    // percentageの場合: 25, 50, 75
-  priority         Int       @default(0)
-  isActive         Boolean   @default(true)
+  id               String         @id @default(uuid())
+  name             String
+  videoUrl         String
+  thumbnailUrl     String?
+  linkUrl          String?
+  ctaText          String?
+  skipAfterSeconds Int            @default(5)
+  triggerType      String         @default("percentage")
+  triggerValue     Float?
+  priority         Int            @default(0)
+  isActive         Boolean        @default(true)
   validFrom        DateTime?
   validTo          DateTime?
   schoolId         String?
-  school           School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
   sponsorId        String?
-  sponsor          Sponsor?  @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
-
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   impressions      AdImpression[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  school           School?        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  sponsor          Sponsor?       @relation(fields: [sponsorId], references: [id])
 
   @@index([schoolId])
   @@index([sponsorId])
@@ -382,50 +369,34 @@ model MidrollAd {
   @@index([triggerType])
 }
 
-// 広告インプレッション統合トラッキング（Google広告レベルの分析用）
 model AdImpression {
-  id           String      @id @default(uuid())
-  
-  // 広告タイプと参照
-  adType       String      // "preroll", "midroll", "banner", "modal"
-  prerollAdId  String?
-  midrollAdId  String?
-  sponsorId    String?
-  
-  // コンテキスト
-  schoolId     String?
-  videoId      String?     // どの動画で表示されたか
-  guardianId   String?     // 視聴したユーザー（ログイン済みの場合）
-  sessionId    String?     // セッションID（フリークエンシー計算用）
-  
-  // 視聴メトリクス
-  watchedFull  Boolean     @default(false)  // 最後まで見たか
-  skipped      Boolean     @default(false)  // スキップしたか
-  skipTime     Float?      // 何秒でスキップしたか
-  watchTime    Float?      // 視聴した秒数
-  adDuration   Float?      // 広告の長さ
-  
-  // 到達率（25%, 50%, 75%, 100%）
-  reached25    Boolean     @default(false)
-  reached50    Boolean     @default(false)
-  reached75    Boolean     @default(false)
-  reached100   Boolean     @default(false)
-  
-  // エンゲージメント
-  clicked      Boolean     @default(false)  // CTAをクリックしたか
-  
-  // デバイス・時間情報
-  deviceType   String?     // "mobile", "tablet", "desktop"
-  userAgent    String?
-  hourOfDay    Int?        // 0-23
-  dayOfWeek    Int?        // 0-6 (日曜=0)
-  
-  createdAt    DateTime    @default(now())
-  
-  // リレーション
-  prerollAd    PrerollAd?  @relation(fields: [prerollAdId], references: [id], onDelete: Cascade)
-  midrollAd    MidrollAd?  @relation(fields: [midrollAdId], references: [id], onDelete: Cascade)
-  
+  id          String     @id @default(uuid())
+  adType      String
+  prerollAdId String?
+  midrollAdId String?
+  sponsorId   String?
+  schoolId    String?
+  videoId     String?
+  guardianId  String?
+  sessionId   String?
+  watchedFull Boolean    @default(false)
+  skipped     Boolean    @default(false)
+  skipTime    Float?
+  watchTime   Float?
+  adDuration  Float?
+  reached25   Boolean    @default(false)
+  reached50   Boolean    @default(false)
+  reached75   Boolean    @default(false)
+  reached100  Boolean    @default(false)
+  clicked     Boolean    @default(false)
+  deviceType  String?
+  userAgent   String?
+  hourOfDay   Int?
+  dayOfWeek   Int?
+  createdAt   DateTime   @default(now())
+  midrollAd   MidrollAd? @relation(fields: [midrollAdId], references: [id], onDelete: Cascade)
+  prerollAd   PrerollAd? @relation(fields: [prerollAdId], references: [id], onDelete: Cascade)
+
   @@index([adType])
   @@index([prerollAdId])
   @@index([midrollAdId])
@@ -439,23 +410,40 @@ model AdImpression {
   @@index([dayOfWeek])
 }
 
-// 汎用分析イベント（ギャラリー閲覧、ポップアップクリックなど）
 model AnalyticsEvent {
-  id         String   @id @default(uuid())
-  type       String   // "gallery_view", "popup_click", "banner_view", etc.
+  id         String    @id @default(uuid())
+  type       String
   schoolId   String?
   classId    String?
   guardianId String?
-  metadata   Json?    // 任意のパラメーター（例: { popupId: "..." }）
-  createdAt  DateTime @default(now())
-
-  school     School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  class      Class?   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  class      Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
   guardian   Guardian? @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  school     School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@index([type])
   @@index([schoolId])
   @@index([classId])
   @@index([guardianId])
   @@index([createdAt])
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  body        String
+  type        String   @default("info") // info, maintenance, video_new, event
+  priority    String   @default("normal") // normal, high
+  targetType  String   @default("all") // all, school, class, individual
+  targetId    String?  // classId, schoolId, guardianId etc.
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  schoolId    String?
+  school      School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+  @@index([type])
+  @@index([publishedAt])
 }

@@ -154,17 +154,30 @@ export async function GET(request: Request) {
         }))
 
         // Build sponsor/banner data
-        const sponsorData = sponsors.map((s: any) => ({
-            id: s.id,
-            name: s.name,
-            type: s.displayStyle === 'modal' ? 'modal' : 'banner',
-            schoolName: s.school?.name || '全園共通',
-            imageUrl: s.imageUrl,
-            isActive: s.isActive,
-            impressions: s._count.impressions,
-            clicks: s._count.clicks,
-            ctr: s._count.impressions > 0 ? (s._count.clicks / s._count.impressions) * 100 : 0
-        }))
+        // Build sponsor/banner data
+        const sponsorData = sponsors.map((s: any) => {
+            // Find impressions for this sponsor from the filtered list
+            const sponsorImpressions = impressions.filter(i => i.sponsorId === s.id)
+
+            const total = sponsorImpressions.length
+            const clicked = sponsorImpressions.filter(i => i.clicked).length
+
+            return {
+                id: s.id,
+                name: s.name,
+                type: s.displayStyle === 'modal' ? 'modal' : 'banner',
+                schoolName: s.school?.name || '全園共通',
+                imageUrl: s.imageUrl,
+                isActive: s.isActive,
+                impressions: total,
+                clicks: clicked,
+                ctr: total > 0 ? (clicked / total) * 100 : 0,
+                // Add safe defaults for video-specific fields to satisfy TS if needed, 
+                // though frontend will hide them.
+                completionRate: 0,
+                skipRate: 0
+            }
+        })
 
         // Device breakdown
         const deviceBreakdown = {

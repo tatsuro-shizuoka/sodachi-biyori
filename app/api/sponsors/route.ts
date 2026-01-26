@@ -10,7 +10,10 @@ export async function GET(request: Request) {
     try {
         const sponsors = await prisma.sponsor.findMany({
             where: { isActive: true },
-            orderBy: { priority: 'desc' }
+            orderBy: [
+                { priority: 'desc' },
+                { updatedAt: 'desc' }
+            ]
         })
 
         // Get the first school's popDisplayMode as the global setting

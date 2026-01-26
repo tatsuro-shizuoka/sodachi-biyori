@@ -124,10 +124,10 @@ export default function AdminDashboardPage() {
         <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                         管理ダッシュボード
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+                    <p className="text-slate-700 dark:text-slate-400 mt-1 text-sm">
                         園（施設）を選択して管理を開始
                     </p>
                 </div>
@@ -135,12 +135,12 @@ export default function AdminDashboardPage() {
 
             {/* Dashboard Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500 delay-100">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 relative overflow-hidden group">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-300 dark:border-slate-700 relative overflow-hidden group">
                     <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-indigo-50/50 to-transparent dark:from-indigo-900/10 transition-transform group-hover:scale-110" />
                     <div className="relative z-10">
-                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">登録済みの園</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-400">登録済みの園</p>
                         <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{schools.length}</h3>
-                        <p className="text-xs text-indigo-500 mt-1 font-medium">施設</p>
+                        <p className="text-xs text-indigo-600 mt-1 font-medium">施設</p>
                     </div>
                 </div>
                 {/* Analytics Stats */}
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
 
             {/* Actions Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500 delay-200">
-                <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-6 rounded-xl shadow-lg text-white relative overflow-hidden group">
+                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-xl shadow-lg text-white relative overflow-hidden group border border-indigo-700/50">
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative z-10">
                         <h3 className="text-lg font-bold mb-2">管理者アクション</h3>
@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
                         <Button
                             onClick={() => setShowCreateForm(true)}
                             variant="ghost"
-                            className="bg-white text-indigo-600 hover:bg-indigo-50 border-none w-full shadow-sm"
+                            className="bg-white text-indigo-700 hover:bg-indigo-50 border-none w-full shadow-sm font-medium"
                         >
                             <Plus className="mr-2 h-4 w-4" />
                             新しい園を追加
@@ -167,17 +167,17 @@ export default function AdminDashboardPage() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-pink-500 to-rose-500 p-6 rounded-xl shadow-lg text-white relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-xl shadow-lg relative overflow-hidden group border border-orange-600/50">
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative z-10">
-                        <h3 className="text-lg font-bold mb-2">スポンサー管理</h3>
-                        <p className="text-pink-100 text-sm mb-4">
+                        <h3 className="text-lg font-bold mb-2 text-white">スポンサー管理</h3>
+                        <p className="text-orange-50 text-sm mb-4">
                             バナー広告や地域のパートナー企業を管理します。
                         </p>
                         <Button
                             onClick={() => router.push('/admin/sponsors')}
                             variant="ghost"
-                            className="bg-white text-pink-600 hover:bg-pink-50 border-none w-full shadow-sm"
+                            className="bg-white text-red-600 hover:bg-orange-50 border-none w-full shadow-sm font-medium"
                         >
                             スポンサー一覧へ
                         </Button>
@@ -256,7 +256,7 @@ export default function AdminDashboardPage() {
                 {schools.map((s) => (
                     <div
                         key={s.id}
-                        className="group bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all duration-200"
+                        className="group bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-300 dark:border-slate-700 hover:shadow-md transition-all duration-200"
                     >
                         <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
@@ -333,20 +333,20 @@ function AnalyticsStats() {
 
     return (
         <>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden relative group">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-300 dark:border-slate-700 overflow-hidden relative group">
                 <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-emerald-50/50 to-transparent dark:from-emerald-900/10 transition-transform group-hover:scale-110" />
                 <div className="relative z-10">
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">総保護者数</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-400">総保護者数</p>
                     <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats.totalGuardians}</h3>
-                    <p className="text-xs text-emerald-500 mt-1 font-medium">名</p>
+                    <p className="text-xs text-emerald-600 mt-1 font-medium">名</p>
                 </div>
             </div>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden relative group">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border border-slate-300 dark:border-slate-700 overflow-hidden relative group">
                 <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-orange-50/50 to-transparent dark:from-orange-900/10 transition-transform group-hover:scale-110" />
                 <div className="relative z-10">
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">総再生数</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-400">総再生数</p>
                     <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats.totalViews}</h3>
-                    <p className="text-xs text-orange-500 mt-1 font-medium">回</p>
+                    <p className="text-xs text-orange-600 mt-1 font-medium">回</p>
                 </div>
             </div>
         </>

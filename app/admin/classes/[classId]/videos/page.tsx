@@ -684,7 +684,8 @@ export default function ClassVideosPage() {
 
             // 2. Upload Logic
             if (targetPlatform === 'cloudflare' && !mockMode) {
-                const isLargeFile = file.size >= 200 * 1024 * 1024 // 200MB
+                // Increase direct upload threshold to 500MB to reduce dependency on TUS for medium files
+                const isLargeFile = file.size >= 500 * 1024 * 1024 // 500MB
 
                 if (!isLargeFile) {
                     // Simple Upload for files < 200MB
@@ -721,10 +722,11 @@ export default function ClassVideosPage() {
                         const upload = new tus.Upload(file, {
                             endpoint: undefined,
                             uploadUrl: uploadLink,
+                            uploadUrl: uploadLink,
                             retryDelays: [0, 1000, 3000, 5000],
-                            resume: false,
+                            resume: false, // Disable resume to prevent 400 errors from stale URLs
                             chunkSize: 50 * 1024 * 1024, // 50MB chunks
-                            metadata: {}, // Disable default metadata to avoid conflicts
+                            // metadata: {}, // Removed override to let Cloudflare handle metadata from creation
                             // Add headers debugging
                             onBeforeRequest: (req: any) => {
                                 const xhr = req.getUnderlyingObject()

@@ -83,7 +83,7 @@ export default function AdminLayout({
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 min-h-screen">
+            <main className="flex-1 ml-64 min-h-screen bg-slate-100 dark:bg-slate-950">
                 {children}
             </main>
         </div>

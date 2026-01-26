@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
 import { deleteCloudflareVideo, extractCloudflareId } from '@/lib/cloudflare-delete'
+import { sendPushNotifications } from '@/lib/notifications'
 
 // GET /api/admin/videos/[videoId] - Get a specific video
 export async function GET(
@@ -68,10 +69,66 @@ export async function PATCH(
         if (categoryId !== undefined) data.categoryId = categoryId || null
         if (isAllClasses !== undefined) data.isAllClasses = isAllClasses
 
+        const videoFn = await prisma.video.findUnique({ where: { id: videoId } });
+        const previousStatus = videoFn?.status;
+
         const video = await prisma.video.update({
             where: { id: videoId },
             data
         })
+
+        // Send notification if status changed to published
+        if (previousStatus !== 'published' && video.status === 'published') {
+            try {
+                const classId = video.classId;
+                // Find all guardians in the class who have notifications enabled
+                const tokens = await prisma.deviceToken.findMany({
+                    where: {
+                        guardian: {
+                            children: {
+                                some: {
+                                    child: {
+                                        classes: {
+                                            some: {
+                                                classId: classId
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        isActive: true
+                    },
+                    include: {
+                        guardian: {
+                            include: {
+                                notifSettings: {
+                                    where: { classId }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const pushTokens = tokens
+                    .filter(t => {
+                        const setting = t.guardian.notifSettings[0];
+                        return !setting || setting.notifyNewVideo !== false;
+                    })
+                    .map(t => t.token);
+
+                if (pushTokens.length > 0) {
+                    await sendPushNotifications(
+                        pushTokens,
+                        '新しい動画が届きました！',
+                        `${video.title} が公開されました。`,
+                        { videoId: video.id, classId }
+                    );
+                }
+            } catch (err) {
+                console.error('Failed to send notifications on update:', err);
+            }
+        }
 
         return NextResponse.json(video)
     } catch (error) {
