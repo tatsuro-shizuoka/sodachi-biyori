@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    // API Version can be pinned here if needed, or leave it to rely on the library default for types
-    // apiVersion: '2024-12-18.acacia', 
-    typescript: true,
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+        // API Version can be pinned here if needed, or leave it to rely on the library default for types
+        // apiVersion: '2024-12-18.acacia', 
+        typescript: true,
+    })
+    : null;
 
 export async function POST(request: Request) {
     try {
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
             );
         }
 
-        if (!process.env.STRIPE_SECRET_KEY) {
+        if (!stripe) {
             console.error('STRIPE_SECRET_KEY is not set');
             return NextResponse.json(
                 { error: 'Server configuration error' },

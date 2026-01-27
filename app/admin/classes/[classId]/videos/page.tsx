@@ -722,7 +722,6 @@ export default function ClassVideosPage() {
                         const upload = new tus.Upload(file, {
                             endpoint: undefined,
                             uploadUrl: uploadLink,
-                            uploadUrl: uploadLink,
                             retryDelays: [0, 1000, 3000, 5000],
                             resume: false, // Disable resume to prevent 400 errors from stale URLs
                             chunkSize: 50 * 1024 * 1024, // 50MB chunks
